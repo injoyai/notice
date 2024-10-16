@@ -21,7 +21,7 @@ func Init(port int) error {
 		g.POST("/notice", func(r *mux.Request) {
 			msg := &output.Message{}
 			r.Parse(msg)
-			output.Trunk.Do(&output.Message{})
+			output.Trunk.Do(msg)
 			in.Succ(nil)
 		})
 

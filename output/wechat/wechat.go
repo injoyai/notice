@@ -4,8 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/eatmoreapple/openwechat"
+	"github.com/injoyai/goutil/oss"
+	"github.com/injoyai/logs"
 	"github.com/injoyai/notice/output"
 	"io"
+	"os"
 	"strings"
 	"sync"
 )
@@ -22,16 +25,15 @@ var (
 func Init() (err error) {
 
 	// 注册消息处理函数
-	Client.MessageHandler = func(msg *openwechat.Message) {
-		if msg.IsText() && msg.Content == "ping" {
-			msg.ReplyText("pong")
-		}
-	}
+	Client.MessageHandler = DealMessage
 
 	// 注册登陆二维码回调
 	Client.UUIDCallback = openwechat.PrintlnQrcodeUrl
 
 	// 登陆
+	if !oss.Exists(HotLoginFilename) {
+		os.Create(HotLoginFilename)
+	}
 	if err := Client.HotLogin(openwechat.NewFileHotReloadStorage(HotLoginFilename)); err != nil {
 		if err != io.EOF {
 			return err
@@ -51,20 +53,22 @@ func Init() (err error) {
 		for _, out := range msg.Output {
 			if name, ok := strings.CutPrefix(out, "wechat:group:"); ok {
 				//给群组发送消息
+				logs.Tracef("给群组[%s]发送消息[%s]\n", name, msg.Content)
 
 				mu.RLock()
 				group, ok := Groups[name]
 				mu.RUnlock()
 				if !ok {
-					groups, err := Self.Groups()
+					groups, err := Self.Groups(true)
 					if err != nil {
-						msg.Back(out, err)
+						logs.Warnf("给群组[%s]发送消息错误： %v\n", name, err)
 						return
 					}
 
 					mu.Lock()
-					clear(Groups)
+					Groups = map[string]*openwechat.Group{}
 					for _, v := range groups {
+						logs.Debug(v.NickName)
 						Groups[v.NickName] = v
 						if v.NickName == name {
 							group = v
@@ -73,11 +77,19 @@ func Init() (err error) {
 					mu.Unlock()
 				}
 
+				if group == nil {
+					logs.Warnf("给好友[%s]发送消息错误： 群组不存在\n", name)
+					return
+				}
+
 				_, err := group.SendText(msg.Content)
-				msg.Back(out, err)
+				if err != nil {
+					logs.Warnf("给群组[%s]发送消息错误： %v\n", name, err)
+				}
 
 			} else if name, ok := strings.CutPrefix(out, "wechat:friend:"); ok {
 				//给好友发送信息
+				logs.Tracef("给好友[%s]发送消息[%s]\n", name, msg.Content)
 
 				mu.RLock()
 				friend, ok := Friends[name]
@@ -85,12 +97,12 @@ func Init() (err error) {
 				if !ok {
 					friends, err := Self.Friends()
 					if err != nil {
-						msg.Back(out, err)
+						logs.Warnf("给好友[%s]发送消息错误： %v\n", name, err)
 						return
 					}
 
 					mu.Lock()
-					clear(Friends)
+					Friends = map[string]*openwechat.Friend{}
 					for _, v := range friends {
 						Friends[v.NickName] = v
 						if v.NickName == name {
@@ -100,8 +112,15 @@ func Init() (err error) {
 					mu.Unlock()
 				}
 
+				if friend == nil {
+					logs.Warnf("给好友[%s]发送消息错误： 好友不存在\n", name)
+					return
+				}
+
 				_, err := friend.SendText(msg.Content)
-				msg.Back(out, err)
+				if err != nil {
+					logs.Warnf("给好友[%s]发送消息错误： %v\n", name, err)
+				}
 
 			}
 		}
