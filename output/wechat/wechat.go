@@ -51,7 +51,7 @@ func Init() (err error) {
 	output.Trunk.Subscribe(func(ctx context.Context, data interface{}) {
 		msg := data.(*output.Message)
 		for _, out := range msg.Output {
-			if name, ok := strings.CutPrefix(out, "wechat:group:"); ok {
+			if name, ok := strings.CutPrefix(out, output.TypeWechatGroup+":"); ok {
 				//给群组发送消息
 				logs.Tracef("给群组[%s]发送消息[%s]\n", name, msg.Content)
 
@@ -87,7 +87,7 @@ func Init() (err error) {
 					logs.Warnf("给群组[%s]发送消息错误： %v\n", name, err)
 				}
 
-			} else if name, ok := strings.CutPrefix(out, "wechat:friend:"); ok {
+			} else if name, ok := strings.CutPrefix(out, output.TypeWechatFriend+":"); ok {
 				//给好友发送信息
 				logs.Tracef("给好友[%s]发送消息[%s]\n", name, msg.Content)
 
