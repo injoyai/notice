@@ -71,10 +71,3 @@ func llama(req string) (string, error) {
 	}
 
 }
-
-type LlamaResponse struct {
-	Model    string `json:"model"`
-	InDate   string `json:"inDate"`
-	Response string `json:"response"`
-	Done     bool   `json:"done"`
-}
