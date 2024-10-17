@@ -55,15 +55,15 @@ type Message struct {
 	Title   string         `json:"title,omitempty"` //消息标题
 	Content string         `json:"content"`         //消息内容
 	Param   map[string]any `json:"param,omitempty"` //其它参数
+	Time    int64          `json:"time"`            //
 }
 
-func (this *Message) Check() error {
+func (this *Message) Check(limit map[string]struct{}) error {
 	for _, out := range this.Output {
 		exist := false
-		for k, _ := range TypeMap {
+		for k, _ := range limit { //TypeMap
 			if strings.HasPrefix(out, k) {
 				exist = true
-
 			}
 		}
 		if !exist {

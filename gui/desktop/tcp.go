@@ -9,6 +9,7 @@ import (
 	"github.com/injoyai/ios"
 	"github.com/injoyai/ios/client"
 	"github.com/injoyai/logs"
+	"github.com/injoyai/notice/oem"
 	"github.com/injoyai/notice/output"
 	"github.com/injoyai/notice/user"
 	"net"
@@ -72,9 +73,11 @@ func (this *tcp) Dial(ctx context.Context) (err error) {
 				}
 				logs.PrintErr(err)
 			}
+			t := time.Now()
 			c.WriteAny(user.LoginReq{
-				Username: username,
-				Password: password,
+				Username:  username,
+				Signal:    oem.Signal(username, password, t),
+				Timestamp: t.Unix(),
 			})
 		})
 	logs.PrintErr(err)

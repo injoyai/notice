@@ -9,6 +9,7 @@ import (
 	"github.com/injoyai/notice/output/desktop"
 	"github.com/injoyai/notice/output/tcp"
 	"github.com/injoyai/notice/output/wechat"
+	"github.com/injoyai/notice/user"
 )
 
 func init() {
@@ -16,6 +17,9 @@ func init() {
 }
 
 func main() {
+
+	//加载用户
+	logs.PanicErr(user.Init())
 
 	//加载微信通知
 	logs.PanicErr(wechat.Init())
