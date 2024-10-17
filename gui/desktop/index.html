@@ -308,9 +308,7 @@
         fnLogin(address, username, password)
     }
 
-    // function fnLogin(address, username, password) {
-    //     console.log("login")
-    // }
+
 
 
     const pushBox = document.getElementById('pushBox');
@@ -323,8 +321,7 @@
         fnPush(method, target, type, content)
     }
 
-    // function fnPush(method, target, type, content) {
-    // }
+
 
     // 弹出通知
     function notice(msg, color) {
@@ -355,7 +352,10 @@
     }
 
     //显示登录界面
-    function showLogin(show) {
+    function showLogin(show,address,username,password) {
+        document.getElementById('address').value=address
+        document.getElementById('username').value=username
+        document.getElementById('password').value=password
         pushBox.style.display = show ? "none" : "block";
         loginBox.style.display = show ? "block" : "none";
     }

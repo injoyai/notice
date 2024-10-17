@@ -34,11 +34,21 @@ func openUI() {
 		App = app
 
 		TCP.Rerun.OnDial(func(index, retry int, err error) {
-			app.Eval(fmt.Sprintf("showLogin(%v)", err != nil))
+			app.Eval(fmt.Sprintf("showLogin(%v,'%s','%s','%s')",
+				err != nil,
+				TCP.Cache.GetString("address"),
+				TCP.Cache.GetString("username"),
+				TCP.Cache.GetString("password"),
+			))
 		})
 
 		app.Bind("init", func() {
-			app.Eval(fmt.Sprintf("showLogin(%v)", TCP.Closed()))
+			app.Eval(fmt.Sprintf("showLogin(%v,'%s','%s','%s')",
+				TCP.Closed(),
+				TCP.Cache.GetString("address"),
+				TCP.Cache.GetString("username"),
+				TCP.Cache.GetString("password"),
+			))
 		})
 
 		app.Bind("fnLogin", func(address, username, password string) {
@@ -68,13 +78,13 @@ func openUI() {
 }
 
 func onReady() {
-	openUI()
-	systray.SetIcon(IcoTimer)
+
+	systray.SetIcon(IcoNotice)
 	systray.SetTooltip("消息通知")
 
 	//显示菜单,这个库不能区分左键和右键,固设置了该菜单
 	mShow := systray.AddMenuItem("显示", "显示界面")
-	mShow.SetIcon(IcoMenuTimer)
+	mShow.SetIcon(IcoMenuShow)
 	go func() {
 		for {
 			<-mShow.ClickedCh
@@ -111,6 +121,8 @@ func onReady() {
 		<-mQuit.ClickedCh
 		systray.Quit()
 	}()
+
+	openUI()
 
 }
 
