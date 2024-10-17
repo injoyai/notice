@@ -22,9 +22,10 @@ func DealMessage(msg *openwechat.Message) {
 		}
 
 		after, ok := strings.CutPrefix(msg.Content, "@"+Self.NickName)
-		if ok {
+		if ok || msg.IsSendByFriend() {
 			result, err := llama(after)
 			if err != nil {
+				msg.ReplyText("我遇到了一个错误：" + err.Error())
 				logs.Warnf("llama处理消息错误： %v\n", err)
 				return
 			}
@@ -35,6 +36,7 @@ func DealMessage(msg *openwechat.Message) {
 }
 
 func llama(req string) (string, error) {
+	http.DefaultClient.SetTimeout(0)
 	resp := http.Url("http://127.0.0.1:11434/api/generate").SetBody(g.Map{
 		"model":  "llama3.2",
 		"prompt": req,

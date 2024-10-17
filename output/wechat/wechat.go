@@ -2,14 +2,12 @@ package wechat
 
 import (
 	"context"
-	"fmt"
 	"github.com/eatmoreapple/openwechat"
 	"github.com/injoyai/goutil/oss"
 	"github.com/injoyai/logs"
 	"github.com/injoyai/notice/output"
 	"io"
 	"os"
-	"strings"
 	"sync"
 )
 
@@ -23,10 +21,8 @@ var (
 )
 
 func Init() (err error) {
-
 	// 注册消息处理函数
 	Client.MessageHandler = DealMessage
-
 	// 注册登陆二维码回调
 	Client.UUIDCallback = openwechat.PrintlnQrcodeUrl
 
@@ -43,15 +39,15 @@ func Init() (err error) {
 		}
 	}
 
+	//获取当前用户信息
 	Self, err = Client.GetCurrentUser()
 	if err != nil {
 		return err
 	}
 
-	output.Trunk.Subscribe(func(ctx context.Context, data interface{}) {
-		msg := data.(*output.Message)
-		for _, out := range msg.Output {
-			if name, ok := strings.CutPrefix(out, output.TypeWechatGroup+":"); ok {
+	output.Trunk.Subscribe(func(ctx context.Context, msg *output.Message) {
+		msg.Listen(map[string]func(name string, msg *output.Message){
+			output.TypeWechatGroup: func(name string, msg *output.Message) {
 				//给群组发送消息
 				logs.Tracef("给群组[%s]发送消息[%s]\n", name, msg.Content)
 
@@ -68,7 +64,6 @@ func Init() (err error) {
 					mu.Lock()
 					Groups = map[string]*openwechat.Group{}
 					for _, v := range groups {
-						logs.Debug(v.NickName)
 						Groups[v.NickName] = v
 						if v.NickName == name {
 							group = v
@@ -76,7 +71,6 @@ func Init() (err error) {
 					}
 					mu.Unlock()
 				}
-
 				if group == nil {
 					logs.Warnf("给好友[%s]发送消息错误： 群组不存在\n", name)
 					return
@@ -86,9 +80,9 @@ func Init() (err error) {
 				if err != nil {
 					logs.Warnf("给群组[%s]发送消息错误： %v\n", name, err)
 				}
-
-			} else if name, ok := strings.CutPrefix(out, output.TypeWechatFriend+":"); ok {
-				//给好友发送信息
+			},
+			output.TypeWechatFriend: func(name string, msg *output.Message) {
+				//给好友发送消息
 				logs.Tracef("给好友[%s]发送消息[%s]\n", name, msg.Content)
 
 				mu.RLock()
@@ -121,48 +115,10 @@ func Init() (err error) {
 				if err != nil {
 					logs.Warnf("给好友[%s]发送消息错误： %v\n", name, err)
 				}
+			},
+		})
 
-			}
-		}
 	})
 
 	return nil
-}
-
-func main() {
-	bot := openwechat.DefaultBot(openwechat.Desktop) // 桌面模式
-
-	// 注册消息处理函数
-	bot.MessageHandler = func(msg *openwechat.Message) {
-		if msg.IsText() && msg.Content == "ping" {
-			msg.ReplyText("pong")
-		}
-	}
-
-	// 注册登陆二维码回调
-	bot.UUIDCallback = openwechat.PrintlnQrcodeUrl
-
-	// 登陆
-	if err := bot.Login(); err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	// 获取登陆的用户
-	self, err := bot.GetCurrentUser()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	// 获取所有的好友
-	friends, err := self.Friends()
-	fmt.Println(friends, err)
-
-	// 获取所有的群组
-	groups, err := self.Groups()
-	fmt.Println(groups, err)
-
-	// 阻塞主goroutine, 直到发生异常或者用户主动退出
-	bot.Block()
 }

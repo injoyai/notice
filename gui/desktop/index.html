@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>消息通知</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            background-color: #f4f4f4;
+            display: flex;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+        }
+
+
+        #content {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ecf0f1;
+        }
+
+        #content iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .device-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .device-info input {
+            margin-bottom: 5px;
+            padding: 5px;
+        }
+
+        #addDeviceBtn {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #addDeviceBtn:hover {
+            background-color: #219653;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: #000000;
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: #000000;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover {
+            color: #218838;
+        }
+
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-content input {
+            width: 85%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .modal-content button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .modal-content button:hover {
+            background-color: #218838;
+        }
+
+        .modal-content h2 {
+
+        }
+
+
+        .notification {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            background-color: #4caf50;
+            color: #fff;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.5s forwards, fadeOut 0.5s 1.5s forwards;
+            opacity: 0;
+            transform: translateY(-100%);
+            z-index: 999;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-100%);
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+
+        .tunnelList {
+            position: relative;
+        }
+
+        .buttonBox {
+            position: absolute;
+            bottom: 10px;
+        }
+
+        .button {
+            bottom: 10px;
+            left: 22px;
+            text-align: center;
+            display: inline-block;
+            margin: 10px;
+            padding: 2px 15px;
+            text-decoration: none;
+            font: bold 12px/25px Arial, sans-serif;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #218838;
+        }
+
+        .mini-button {
+            text-align: center;
+            display: inline-block;
+            padding: 1px 4px;
+            text-decoration: none;
+            font: bold 12px/25px Arial, sans-serif;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .mini-button:hover {
+            background-color: #218838;
+        }
+
+
+        .container {
+            appearance: none;
+            width: 100%;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 4px;
+            font-size: 16px;
+            color: #333;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .container :hover {
+            border-color: #0056b3;
+        }
+
+        .options {
+            margin-bottom: 10px;
+        }
+
+        .options label {
+            margin-right: 10px;
+        }
+
+
+        .custom-select {
+            appearance: none;
+            width: 91%;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 4px;
+            font-size: 16px;
+            color: #333;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .custom-select:hover {
+            border-color: #0056b3;
+        }
+
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="loginBox" class="options">
+        <div class="modal-content">
+            <h2>连接服务器</h2>
+            <input type="text" id="address" placeholder="服务地址" value="localhost:8427">
+            <input type="text" id="username" placeholder="用户名">
+            <input type="text" id="password" placeholder="密码">
+            <button id="loginBoxClick">登录</button>
+        </div>
+    </div>
+
+    <div id="pushBox" class="options">
+        <div class="modal-content">
+            <h2>消息推送</h2>
+            <select id="method" name="method" class="custom-select">
+                <option value="wechat:group">微信:群聊</option>
+                <option value="wechat:friend">微信:好友</option>
+                <option value="desktop:notice">桌面:通知</option>
+                <option value="desktop:voice">桌面:语音</option>
+                <option value="desktop:popup">桌面:弹窗</option>
+            </select>
+            <input type="text" id="target" placeholder="推送目标">
+            <select id="type" name="type" class="custom-select">
+                <option value="text">文本</option>
+                <option value="file">文件</option>
+                <option value="image">图片</option>
+                <option value="audio">语音</option>
+                <option value="video">视频</option>
+            </select>
+            <input type="text" id="content2" placeholder="消息内容">
+            <button id="pushBoxClick">推送</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    const loginBox = document.getElementById('loginBox');
+    const loginBoxClick = document.getElementById('loginBoxClick')
+    loginBoxClick.onclick = () => {
+        const address = document.getElementById('address').value;
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        fnLogin(address, username, password)
+    }
+
+    // function fnLogin(address, username, password) {
+    //     console.log("login")
+    // }
+
+
+    const pushBox = document.getElementById('pushBox');
+    const pushBoxClick = document.getElementById('pushBoxClick')
+    pushBoxClick.onclick = () => {
+        const method = document.getElementById('method').value;
+        const target = document.getElementById('target').value;
+        const type = document.getElementById('type').value;
+        const content = document.getElementById('content2').value;
+        fnPush(method, target, type, content)
+    }
+
+    // function fnPush(method, target, type, content) {
+    // }
+
+    // 弹出通知
+    function notice(msg, color) {
+        // 假设发送成功后显示一个小窗口提醒
+        var notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.innerText = msg;
+        if (color !== "") {
+            notification.style.backgroundColor = color;
+        }
+        document.body.appendChild(notification);
+
+        // 2秒后自动消失
+        setTimeout(function () {
+            document.body.removeChild(notification);
+        }, 3000);
+    }
+
+    // 弹出错误通知
+    function noticeErr(msg) {
+        notice(msg, '#ff0029')
+    }
+
+    //显示推送界面
+    function showPush(show) {
+        loginBox.style.display = show ? "none" : "block";
+        pushBox.style.display = show ? "block" : "none";
+    }
+
+    //显示登录界面
+    function showLogin(show) {
+        pushBox.style.display = show ? "none" : "block";
+        loginBox.style.display = show ? "block" : "none";
+    }
+
+
+    init()
+
+
+</script>
+
+</body>
+</html>
