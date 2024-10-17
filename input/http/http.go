@@ -7,11 +7,9 @@ import (
 	"github.com/injoyai/notice/user"
 )
 
-var Server = mux.New()
-
 func Init(port int) error {
 
-	s := Server.SetPort(port)
+	s := mux.New().SetPort(port)
 	s.Group("/api", func(g *mux.Grouper) {
 
 		//校验权限
