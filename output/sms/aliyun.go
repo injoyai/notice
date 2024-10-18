@@ -2,11 +2,11 @@ package sms
 
 import (
 	"context"
-	"github.com/injoyai/conv"
 	"github.com/injoyai/conv/cfg"
 	"github.com/injoyai/goutil/notice"
 	"github.com/injoyai/logs"
 	"github.com/injoyai/notice/output"
+	"strings"
 )
 
 func Init() {
@@ -20,14 +20,19 @@ func Init() {
 
 	output.Trunk.Subscribe(func(ctx context.Context, msg *output.Message) {
 		msg.On(output.TypeAliyunSMS, func(name string, msg *output.Message) {
-			Aliyun.Publish(&notice.Message{
-				Target:  name,
-				Content: msg.Content,
-				Param: map[string]interface{}{
-					"TemplateID": conv.String(msg.Param["TemplateID"]),
-					"Param":      conv.String(msg.Param["Param"]),
-				},
-			})
+
+			list := strings.SplitN(name, ":", 2)
+			if len(list) == 2 {
+				err := Aliyun.Publish(&notice.Message{
+					Target: list[1],
+					Param: map[string]interface{}{
+						"TemplateID": list[0],
+						"Param":      msg.Content,
+					},
+				})
+				logs.PrintErr(err)
+			}
+
 		})
 	})
 }
