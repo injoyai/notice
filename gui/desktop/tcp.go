@@ -126,7 +126,7 @@ func (this *tcp) dealMessage(c *client.Client, msg ios.Acker) {
 		return
 	}
 	var err error
-	switch data.Param["type"] {
+	switch data.Type {
 	case output.WinTypeVoice:
 		err = notice.DefaultVoice.Speak(data.Content)
 	case output.WinTypePopup:

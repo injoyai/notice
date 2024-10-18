@@ -108,9 +108,10 @@ func (this *Message) Listen(m map[string]func(name string, msg *Message)) {
 }
 
 type Details struct {
-	Title   string         `json:"title"`   //消息标题
-	Content string         `json:"content"` //消息内容
-	Param   map[string]any `json:"param"`   //其它参数
+	Type    string         `json:"type,omitempty"`  //消息方式
+	Title   string         `json:"title"`           //消息标题
+	Content string         `json:"content"`         //消息内容
+	Param   map[string]any `json:"param,omitempty"` //其它参数
 }
 
 type Resp struct {

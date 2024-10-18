@@ -19,10 +19,7 @@ func Init() {
 			return
 		}
 		d := msg.Details()
-		if d.Param == nil {
-			d.Param = make(map[string]any)
-		}
-		d.Param["type"] = Type
+		d.Type = Type
 		c.WriteAny(d)
 	}
 
