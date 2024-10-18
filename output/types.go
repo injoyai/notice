@@ -20,6 +20,7 @@ var TypeMap = map[string]struct{}{
 }
 
 const (
+	TypeAll           = "all"            //全部
 	TypeTCP           = "tcp"            //tcp前缀
 	TypeDesktopNotice = "desktop:notice" //桌面端通知
 	TypeDesktopVoice  = "desktop:voice"  //桌面端语音
@@ -50,6 +51,7 @@ const (
 
 // Message 消息格式
 type Message struct {
+	ID      string         `json:"id"`              //消息id
 	Output  []string       `json:"output"`          //输出方式(wechat:group:群名)
 	Type    string         `json:"type,omitempty"`  //消息类型,默认文本,视频,图片,语音
 	Title   string         `json:"title,omitempty"` //消息标题
@@ -59,11 +61,15 @@ type Message struct {
 }
 
 func (this *Message) Check(limit map[string]struct{}) error {
+	if _, ok := limit[TypeAll]; ok {
+		return nil
+	}
 	for _, out := range this.Output {
 		exist := false
 		for k, _ := range limit { //TypeMap
 			if strings.HasPrefix(out, k) {
 				exist = true
+				break
 			}
 		}
 		if !exist {
@@ -105,4 +111,10 @@ type Details struct {
 	Title   string         `json:"title"`   //消息标题
 	Content string         `json:"content"` //消息内容
 	Param   map[string]any `json:"param"`   //其它参数
+}
+
+type Resp struct {
+	ID      string `json:"id"`
+	Success bool   `json:"success"`
+	Message string `json:"message,omitempty"`
 }

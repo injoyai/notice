@@ -126,6 +126,10 @@
             background-color: #218838;
         }
 
+        .modal-content button:disabled {
+            background-color: #dadada;
+        }
+
         .modal-content h2 {
 
         }
@@ -194,23 +198,6 @@
             background-color: #218838;
         }
 
-        .mini-button {
-            text-align: center;
-            display: inline-block;
-            padding: 1px 4px;
-            text-decoration: none;
-            font: bold 12px/25px Arial, sans-serif;
-            background-color: #28a745;
-            color: #fff;
-            border: none;
-            border-radius: 2px;
-            cursor: pointer;
-        }
-
-        .mini-button:hover {
-            background-color: #218838;
-        }
-
 
         .container {
             appearance: none;
@@ -266,10 +253,10 @@
     <div id="loginBox" class="options">
         <div class="modal-content">
             <h2>连接服务器</h2>
-            <input type="text" id="address" placeholder="服务地址" value="localhost:8427">
+            <input type="text" id="address" placeholder="服务地址" value="aiot.qianlangtech.com:8427">
             <input type="text" id="username" placeholder="用户名">
             <input type="text" id="password" placeholder="密码">
-            <button id="loginBoxClick">登录</button>
+            <button type="button" id="loginBoxClick">登录</button>
         </div>
     </div>
 
@@ -308,8 +295,21 @@
         fnLogin(address, username, password)
     }
 
+    function loginBefore() {
+        loginBoxClick.disabled = true
+        loginBoxClick.innerHTML = '登录中...'
+    }
 
-
+    function loginAfter(err) {
+        loginBoxClick.disabled = false
+        loginBoxClick.innerHTML = '登录'
+        if (err === '') {
+            notice('成功')
+            showPush(true)
+        } else {
+            noticeErr(err)
+        }
+    }
 
     const pushBox = document.getElementById('pushBox');
     const pushBoxClick = document.getElementById('pushBoxClick')
@@ -321,6 +321,22 @@
         fnPush(method, target, type, content)
     }
 
+
+    function pushBefore() {
+        pushBoxClick.disabled = true
+        pushBoxClick.innerHTML = '推送中...'
+    }
+
+
+    function pushAfter(err) {
+        pushBoxClick.disabled = false
+        pushBoxClick.innerHTML = '推送'
+        if (err === '') {
+            notice('成功')
+        } else {
+            noticeErr(err)
+        }
+    }
 
 
     // 弹出通知
@@ -352,14 +368,13 @@
     }
 
     //显示登录界面
-    function showLogin(show,address,username,password) {
-        document.getElementById('address').value=address
-        document.getElementById('username').value=username
-        document.getElementById('password').value=password
+    function showLogin(show, address, username, password) {
+        document.getElementById('address').value = address
+        document.getElementById('username').value = username
+        document.getElementById('password').value = password
         pushBox.style.display = show ? "none" : "block";
         loginBox.style.display = show ? "block" : "none";
     }
-
 
     init()
 

@@ -4,11 +4,14 @@ import (
 	_ "embed"
 	"fmt"
 	"github.com/getlantern/systray"
+	"github.com/injoyai/base/g"
+	"github.com/injoyai/conv"
 	"github.com/injoyai/goutil/oss"
 	"github.com/injoyai/lorca"
 	"github.com/injoyai/notice/output"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 //go:embed index.html
@@ -33,14 +36,15 @@ func openUI() {
 	}, func(app lorca.APP) error {
 		App = app
 
-		TCP.Rerun.OnDial(func(index, retry int, err error) {
+		TCP.onLogin = func() { app.Eval(fmt.Sprintf("showPush(true)")) }
+		TCP.onClose = func(err error) {
 			app.Eval(fmt.Sprintf("showLogin(%v,'%s','%s','%s')",
 				err != nil,
 				TCP.Cache.GetString("address"),
 				TCP.Cache.GetString("username"),
 				TCP.Cache.GetString("password"),
 			))
-		})
+		}
 
 		app.Bind("init", func() {
 			app.Eval(fmt.Sprintf("showLogin(%v,'%s','%s','%s')",
@@ -52,25 +56,25 @@ func openUI() {
 		})
 
 		app.Bind("fnLogin", func(address, username, password string) {
-			if err := TCP.Update(address, username, password); err != nil {
-				app.Eval(fmt.Sprintf("notice('%s')", err.Error()))
-				return
-			}
-			app.Eval("notice('成功')")
-			app.Eval("showPush(true)")
+			app.Eval("loginBefore()")
+			err := TCP.Update(address, username, password)
+			app.Eval(fmt.Sprintf("loginAfter('%v')", conv.String(err)))
 		})
 
 		app.Bind("fnPush", func(method, target, Type, content string) {
+			app.Eval("pushBefore()")
+			id := g.RandString(16)
 			err := TCP.WriteAny(output.Message{
+				ID:      id,
 				Output:  []string{method + ":" + target},
 				Type:    Type,
 				Content: content,
+				Time:    time.Now().Unix(),
 			})
-			if err != nil {
-				app.Eval(fmt.Sprintf("notice('%s')", err.Error()))
-				return
+			if err == nil {
+				_, err = TCP.wait.Wait(id)
 			}
-			app.Eval("notice('成功')")
+			app.Eval(fmt.Sprintf("pushAfter('%v')", conv.String(err)))
 		})
 
 		return nil

@@ -5,18 +5,16 @@ import (
 	"github.com/injoyai/base/g"
 	"github.com/injoyai/base/maps"
 	"github.com/injoyai/minidb"
-	"github.com/injoyai/notice/oem"
 	"time"
 )
 
 var (
-	DB = minidb.New("./data/database/", "default", func(db *minidb.DB) {
-		minidb.WithID("ID")
-	})
+	DB    = minidb.New("./data/database/", "default")
 	Cache = maps.NewSafe()
 )
 
 func Init() error {
+	initToken()
 	if err := DB.Sync(new(User)); err != nil {
 		return err
 	}
@@ -31,17 +29,18 @@ func Init() error {
 }
 
 type LoginReq struct {
+	ID        string `json:"id"`        //消息id
 	Username  string `json:"username"`  //用户名
 	Signal    string `json:"signal"`    //签名
 	Timestamp int64  `json:"timestamp"` //时间戳
 }
 
 type User struct {
-	ID       string   `json:"id"`       //主键
-	Name     string   `json:"name"`     //名称
-	Username string   `json:"username"` //账号
-	Password string   `json:"password"` //密码
-	Limit    []string `json:"limit"`    //消息推送限制
+	ID       string   `json:"id" orm:"time"` //主键
+	Name     string   `json:"name"`          //名称
+	Username string   `json:"username"`      //账号
+	Password string   `json:"password"`      //密码
+	Limit    []string `json:"limit"`         //消息推送限制
 }
 
 func (this *User) LimitMap() map[string]struct{} {
@@ -53,14 +52,24 @@ func (this *User) LimitMap() map[string]struct{} {
 }
 
 func CheckToken(token string) (*User, error) {
-	if oem.IsSuperToken(token) {
+	if Token.IsSuper(token) {
 		return &User{Username: "super"}, nil
 	}
-	username, err := oem.GetToken(token)
+	username, err := Token.Get(token)
 	if err != nil {
 		return nil, err
 	}
-	return GetByCache(username)
+	if len(username) == 0 {
+		return nil, errors.New("token无效")
+	}
+	u, err := GetByCache(username)
+	if err != nil {
+		if err.Error() == "用户不存在" {
+			return nil, errors.New("token无效")
+		}
+		return nil, err
+	}
+	return u, nil
 }
 
 func GetByCache(username string) (*User, error) {
@@ -79,14 +88,14 @@ func Login(req *LoginReq) (string, error) {
 		return "", err
 	}
 
-	signal := oem.Signal(user.Username, user.Password, time.Unix(req.Timestamp, 0))
+	signal := Signal(user.Username, user.Password, time.Unix(req.Timestamp, 0))
 
 	if req.Signal != signal {
 		return "", errors.New("验证失败")
 	}
 
 	token := g.RandString(16)
-	err = oem.SetToken(token, user.Username, time.Hour*24*3)
+	err = Token.Set(token, user.Username, time.Hour*24*3)
 
 	return token, err
 }
@@ -97,7 +106,35 @@ func All() ([]*User, error) {
 	return data, err
 }
 
-//func List() ([]*User, error) {
-//	data := []*User{}
-//
-//}
+func Create(user *User) error {
+	if user.Username == "" {
+		return errors.New("用户名不能为空")
+	}
+	if user.Password == "" {
+		return errors.New("密码不能为空")
+	}
+	u, err := GetByCache(user.Username)
+	if err != nil && err.Error() != "用户不存在" {
+		return err
+	}
+	if u == nil {
+		err = DB.Insert(user)
+		if err == nil {
+			Cache.Set(user.Username, user)
+		}
+		return err
+	}
+	err = DB.Where("Username=?", user.Username).Update(user)
+	if err == nil {
+		Cache.Set(user.Username, user)
+	}
+	return err
+}
+
+func Del(username string) error {
+	err := DB.Where("Username=?", username).Delete(&User{})
+	if err == nil {
+		Cache.Del(username)
+	}
+	return err
+}

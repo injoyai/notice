@@ -9,7 +9,7 @@ import (
 	"github.com/injoyai/notice/output"
 )
 
-func init() {
+func Init() {
 	Aliyun, err := notice.NewAliyunSMS(&notice.AliyunConfig{
 		SecretID:  cfg.GetString("sms.aliyun.secretID"),
 		SecretKey: cfg.GetString("sms.aliyun.secretKey"),

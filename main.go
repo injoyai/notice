@@ -4,9 +4,11 @@ import (
 	"github.com/injoyai/conv/cfg"
 	"github.com/injoyai/conv/codec"
 	"github.com/injoyai/logs"
+	"github.com/injoyai/notice/input/forbidden"
 	"github.com/injoyai/notice/input/http"
 	in_tcp "github.com/injoyai/notice/input/tcp"
 	"github.com/injoyai/notice/output/desktop"
+	"github.com/injoyai/notice/output/sms"
 	"github.com/injoyai/notice/output/tcp"
 	"github.com/injoyai/notice/output/wechat"
 	"github.com/injoyai/notice/user"
@@ -17,6 +19,12 @@ func init() {
 }
 
 func main() {
+
+	//加载违禁词规则
+	forbidden.Init()
+
+	//加载短信
+	sms.Init()
 
 	//加载用户
 	logs.PanicErr(user.Init())

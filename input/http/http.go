@@ -3,6 +3,7 @@ package http
 import (
 	"github.com/injoyai/goutil/frame/in/v3"
 	"github.com/injoyai/goutil/frame/mux"
+	"github.com/injoyai/notice/input/forbidden"
 	"github.com/injoyai/notice/output"
 	"github.com/injoyai/notice/user"
 )
@@ -34,13 +35,38 @@ func Init(port int) error {
 			u := r.GetCache("user").Val().(*user.User)
 			msg := &output.Message{}
 			r.Parse(msg)
+			//校验发送权限
 			err := msg.Check(u.LimitMap())
 			in.CheckErr(err)
+			//检查违禁词
+			err = forbidden.Forbidden.Check(msg.Content)
+			in.CheckErr(err)
+			//加入发送队列
 			output.Trunk.Do(msg)
 			in.Succ(nil)
 		})
 
 		//查询用户列表
+		g.GET("/user/all", func(r *mux.Request) {
+			data, err := user.All()
+			in.CheckErr(err)
+			in.Succ(data)
+		})
+
+		//添加/修改用户
+		g.POST("/user", func(r *mux.Request) {
+			req := new(user.User)
+			r.Parse(req)
+			err := user.Create(req)
+			in.Err(err)
+		})
+
+		//删除用户
+		g.DELETE("/user", func(r *mux.Request) {
+			username := r.GetString("username")
+			err := user.Del(username)
+			in.Err(err)
+		})
 
 	})
 	return s.Run()
