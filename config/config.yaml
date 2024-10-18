@@ -23,8 +23,7 @@ sms:
 input:
   #违禁词
   forbidden:
-    - 共产党
-    - 傻
+    - 违禁词
 
 
 plugins:
