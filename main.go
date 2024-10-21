@@ -12,10 +12,20 @@ import (
 	"github.com/injoyai/notice/output/tcp"
 	"github.com/injoyai/notice/output/wechat"
 	"github.com/injoyai/notice/user"
+	"os"
+	"path/filepath"
 )
 
+var DataDir = "./"
+
 func init() {
-	cfg.Init("./config/config.yaml", codec.Yaml)
+	switch {
+	case len(os.Args) > 1:
+		DataDir = os.Args[1]
+	default:
+		DataDir = "./"
+	}
+	cfg.Init(filepath.Join(DataDir, "/config/config.yaml"), codec.Yaml)
 }
 
 func main() {
@@ -27,10 +37,10 @@ func main() {
 	sms.Init()
 
 	//加载用户
-	logs.PanicErr(user.Init())
+	logs.PanicErr(user.Init(DataDir))
 
 	//加载微信通知
-	logs.PanicErr(wechat.Init())
+	logs.PanicErr(wechat.Init(DataDir))
 
 	//加载桌面端通知
 	desktop.Init()

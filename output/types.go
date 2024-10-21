@@ -73,7 +73,7 @@ func (this *Message) Check(limit map[string]struct{}) error {
 			}
 		}
 		if !exist {
-			return fmt.Errorf("输出方式[%s]不存在", out)
+			return fmt.Errorf("输出方式[%s]没有权限或不存在", out)
 		}
 	}
 	return nil

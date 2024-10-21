@@ -8,6 +8,7 @@ import (
 	"github.com/injoyai/notice/output"
 	"io"
 	"os"
+	"path/filepath"
 	"sync"
 )
 
@@ -20,7 +21,10 @@ var (
 	mu               sync.RWMutex
 )
 
-func Init() (err error) {
+func Init(dir string) (err error) {
+
+	HotLoginFilename = filepath.Join(dir, "data/cache/wechat_hot_login")
+
 	// 注册消息处理函数
 	Client.MessageHandler = DealMessage
 	// 注册登陆二维码回调

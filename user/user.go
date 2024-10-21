@@ -5,15 +5,19 @@ import (
 	"github.com/injoyai/base/g"
 	"github.com/injoyai/base/maps"
 	"github.com/injoyai/minidb"
+	"github.com/injoyai/notice/output"
+	"path/filepath"
 	"time"
 )
 
 var (
-	DB    = minidb.New("./data/database/", "default")
+	DB    *minidb.DB
 	Cache = maps.NewSafe()
 )
 
-func Init() error {
+func Init(dir string) error {
+	DB = minidb.New(filepath.Join(dir, "data/database/"), "default")
+
 	initToken()
 	if err := DB.Sync(new(User)); err != nil {
 		return err
@@ -53,7 +57,7 @@ func (this *User) LimitMap() map[string]struct{} {
 
 func CheckToken(token string) (*User, error) {
 	if Token.IsSuper(token) {
-		return &User{Username: "super"}, nil
+		return &User{Username: "super", Limit: []string{output.TypeAll}}, nil
 	}
 	username, err := Token.Get(token)
 	if err != nil {
