@@ -11,6 +11,6 @@
 ![](docs/push_by_http.png)
 ![](docs/push_by_http_result.png)
 
-2. 通过GUI(本质是TCP)推送
+2. 通过GUI(本质是TCP)推送,需要通过HTTP先添加用户先
 
 ![](docs/push_by_gui.png)
