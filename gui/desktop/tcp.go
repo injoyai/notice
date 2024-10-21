@@ -8,6 +8,7 @@ import (
 	"github.com/injoyai/base/safe"
 	"github.com/injoyai/goutil/cache"
 	"github.com/injoyai/goutil/notice"
+	"github.com/injoyai/goutil/oss"
 	"github.com/injoyai/ios"
 	"github.com/injoyai/ios/client"
 	"github.com/injoyai/logs"
@@ -23,7 +24,7 @@ var _ safe.Dialer = (*tcp)(nil)
 func NewTCP() *tcp {
 	t := &tcp{
 		Rerun: util.NewRerun(),
-		Cache: cache.NewFile("user"),
+		Cache: cache.NewFile(oss.UserInjoyDir("notice/cache/user")),
 		wait:  wait.New(time.Second * 2),
 	}
 	return t
@@ -36,6 +37,7 @@ type tcp struct {
 	onLogin func()
 	onClose func(err error)
 	wait    *wait.Entity
+	login   bool
 }
 
 func (this *tcp) Update(address, username, password string) error {
@@ -63,7 +65,9 @@ func (this *tcp) Dial(ctx context.Context) (err error) {
 				if this.onClose != nil {
 					this.onClose(err)
 				}
+				this.login = false
 			}
+			go c.Run()
 			t := time.Now()
 			c.WriteAny(user.LoginReq{
 				ID:        t.String(),
@@ -78,18 +82,21 @@ func (this *tcp) Dial(ctx context.Context) (err error) {
 			if this.onLogin != nil {
 				this.onLogin()
 			}
-
+			this.login = true
 		})
 	logs.PrintErr(err)
-	return
+	return err
 }
 
 func (this *tcp) Run(ctx context.Context) error {
 	this.Client.Ctx = ctx
-	return this.Client.Run()
+	<-this.Client.Done()
+	return this.Client.Err()
+	//return this.Client.Run()
 }
 
 func (this *tcp) Close() error {
+	this.Rerun.Close()
 	if this.Client != nil {
 		return this.Client.Close()
 	}

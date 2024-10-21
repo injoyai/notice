@@ -23,6 +23,15 @@ var (
 )
 
 func main() {
+	////提示已经有进程在运行
+	//result, err := shell.Exec("tasklist /FI 'imagename eq notice.exe'")
+	//if err == nil && strings.Contains(result.String(), "notice.exe"){
+	//
+	//}
+
+	//关闭老的进程
+	//shell.Stop("notice.exe")
+
 	go TCP.Rerun.Run(TCP)
 
 	systray.Run(onReady, onExit)
@@ -38,8 +47,7 @@ func openUI() {
 
 		TCP.onLogin = func() { app.Eval(fmt.Sprintf("showPush(true)")) }
 		TCP.onClose = func(err error) {
-			app.Eval(fmt.Sprintf("showLogin(%v,'%s','%s','%s')",
-				err != nil,
+			app.Eval(fmt.Sprintf("showLogin(true,'%s','%s','%s')",
 				TCP.Cache.GetString("address"),
 				TCP.Cache.GetString("username"),
 				TCP.Cache.GetString("password"),
@@ -48,7 +56,7 @@ func openUI() {
 
 		app.Bind("init", func() {
 			app.Eval(fmt.Sprintf("showLogin(%v,'%s','%s','%s')",
-				TCP.Closed(),
+				!TCP.login,
 				TCP.Cache.GetString("address"),
 				TCP.Cache.GetString("username"),
 				TCP.Cache.GetString("password"),
@@ -75,6 +83,15 @@ func openUI() {
 				_, err = TCP.wait.Wait(id)
 			}
 			app.Eval(fmt.Sprintf("pushAfter('%v')", conv.String(err)))
+		})
+
+		app.Bind("fnClose", func() {
+			TCP.Close()
+			app.Eval(fmt.Sprintf("showLogin(true,'%s','%s','%s')",
+				TCP.Cache.GetString("address"),
+				TCP.Cache.GetString("username"),
+				TCP.Cache.GetString("password"),
+			))
 		})
 
 		return nil
@@ -126,7 +143,10 @@ func onReady() {
 		systray.Quit()
 	}()
 
-	openUI()
+	select {
+	case mShow.ClickedCh <- struct{}{}:
+	default:
+	}
 
 }
 
