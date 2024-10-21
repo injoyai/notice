@@ -6,6 +6,7 @@ import (
 	"github.com/getlantern/systray"
 	"github.com/injoyai/base/g"
 	"github.com/injoyai/conv"
+	"github.com/injoyai/goutil/cache"
 	"github.com/injoyai/goutil/oss"
 	"github.com/injoyai/lorca"
 	"github.com/injoyai/notice/output"
@@ -18,8 +19,9 @@ import (
 var html string
 
 var (
-	App lorca.APP
-	TCP = NewTCP()
+	App  lorca.APP
+	TCP  = NewTCP()
+	Push = cache.NewFile(oss.UserInjoyDir("notice/cache/push"))
 )
 
 func main() {
@@ -45,7 +47,14 @@ func openUI() {
 	}, func(app lorca.APP) error {
 		App = app
 
-		TCP.onLogin = func() { app.Eval(fmt.Sprintf("showPush(true)")) }
+		TCP.onLogin = func() {
+			app.Eval(fmt.Sprintf("showPush(true,'%s','%s','%s','%s')",
+				Push.GetString("method"),
+				Push.GetString("target"),
+				Push.GetString("type"),
+				Push.GetString("content"),
+			))
+		}
 		TCP.onClose = func(err error) {
 			app.Eval(fmt.Sprintf("showLogin(true,'%s','%s','%s')",
 				TCP.Cache.GetString("address"),
@@ -55,21 +64,43 @@ func openUI() {
 		}
 
 		app.Bind("init", func() {
-			app.Eval(fmt.Sprintf("showLogin(%v,'%s','%s','%s')",
-				!TCP.login,
-				TCP.Cache.GetString("address"),
-				TCP.Cache.GetString("username"),
-				TCP.Cache.GetString("password"),
-			))
+			if TCP.login {
+				app.Eval(fmt.Sprintf("showPush(true,'%s','%s','%s','%s')",
+					Push.GetString("method"),
+					Push.GetString("target"),
+					Push.GetString("type"),
+					Push.GetString("content"),
+				))
+			} else {
+				app.Eval(fmt.Sprintf("showLogin(true,'%s','%s','%s')",
+					TCP.Cache.GetString("address"),
+					TCP.Cache.GetString("username"),
+					TCP.Cache.GetString("password"),
+				))
+			}
 		})
 
 		app.Bind("fnLogin", func(address, username, password string) {
 			app.Eval("loginBefore()")
 			err := TCP.Update(address, username, password)
 			app.Eval(fmt.Sprintf("loginAfter('%v')", conv.String(err)))
+			if err == nil {
+				app.Eval(fmt.Sprintf("showPush(true,'%s','%s','%s','%s')",
+					Push.GetString("method"),
+					Push.GetString("target"),
+					Push.GetString("type"),
+					Push.GetString("content"),
+				))
+			}
 		})
 
 		app.Bind("fnPush", func(method, target, Type, content string) {
+			Push.Set("method", method)
+			Push.Set("target", target)
+			Push.Set("type", Type)
+			Push.Set("content", content)
+			Push.Save()
+
 			app.Eval("pushBefore()")
 			id := g.RandString(16)
 			err := TCP.WriteAny(output.Message{

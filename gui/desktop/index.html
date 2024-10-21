@@ -308,7 +308,6 @@
         loginBoxClick.innerHTML = '登录'
         if (err === '') {
             notice('成功')
-            showPush(true)
         } else {
             noticeErr(err)
         }
@@ -369,7 +368,11 @@
     }
 
     //显示推送界面
-    function showPush(show) {
+    function showPush(show, method, target, type, content) {
+        document.getElementById('method').value = method
+        document.getElementById('target').value = target
+        document.getElementById('type').value = type
+        document.getElementById('content2').value = content
         loginBox.style.display = show ? "none" : "block";
         pushBox.style.display = show ? "block" : "none";
     }

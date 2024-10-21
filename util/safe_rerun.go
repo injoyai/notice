@@ -19,7 +19,7 @@ func NewRerun() *Rerun {
 		dialed:   false,
 		dialErr:  errors.New("未连接"),
 		onRetry:  func(retry int) time.Duration { return time.Second * 10 },
-		onClose:  func(index int) time.Duration { return time.Second * 10 },
+		onClose:  func(index int) time.Duration { return time.Second * 2 },
 		firstErr: make(chan error),
 		OneRun:   safe.NewOneRun(nil),
 	}
@@ -61,6 +61,10 @@ func (this *Rerun) Run(r Dialer) error {
 				return ctx.Err()
 
 			default:
+				if index > 0 {
+					<-time.After(this.onClose(index))
+				}
+
 				//等待连接成功
 				for retry := 0; ; {
 					select {
@@ -89,7 +93,6 @@ func (this *Rerun) Run(r Dialer) error {
 				this.dialed, this.dialErr = true, nil
 				err := r.Run(ctx)
 				this.dialed, this.dialErr = false, err
-				<-time.After(this.onClose(index + 1))
 
 			}
 		}
