@@ -102,6 +102,13 @@ func Init(dir string) (err error) {
 					mu.Lock()
 					Friends = map[string]*openwechat.Friend{}
 					for _, v := range friends {
+						if len(v.RemarkName) > 0 {
+							Friends[v.RemarkName] = v
+							if v.RemarkName == name {
+								friend = v
+							}
+							continue
+						}
 						Friends[v.NickName] = v
 						if v.NickName == name {
 							friend = v
