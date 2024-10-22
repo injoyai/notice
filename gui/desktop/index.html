@@ -320,6 +320,14 @@
         const target = document.getElementById('target').value;
         const type = document.getElementById('type').value;
         const content = document.getElementById('content2').value;
+        if (target === '') {
+            noticeErr("推送目标不能为空")
+            return
+        }
+        if (content === '') {
+            noticeErr("消息内容不能为空")
+            return
+        }
         fnPush(method, target, type, content)
     }
     const pushBoxClose = document.getElementById('pushBoxClose')
