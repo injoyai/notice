@@ -1,4 +1,4 @@
-name="notice"
+name="notice_client"
 GOOS=windows GOARCH=amd64 go build -v -ldflags="-H windowsgui -w -s" -o ./$name.exe
 echo "Windows编译完成..."
 echo "开始压缩..."
