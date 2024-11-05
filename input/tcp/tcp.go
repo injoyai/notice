@@ -34,7 +34,8 @@ func DealMessage(c *client.Client, msg ios.Acker) {
 			return err
 		}
 		//发送队列
-		return output.Trunk.Do(data)
+		_, err = output.Trunk.Do(data)
+		return err
 	}()
 
 	c.WriteAny(output.Resp{

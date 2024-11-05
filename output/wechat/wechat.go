@@ -2,6 +2,7 @@ package wechat
 
 import (
 	"context"
+	"errors"
 	"github.com/eatmoreapple/openwechat"
 	"github.com/injoyai/goutil/oss"
 	"github.com/injoyai/logs"
@@ -50,10 +51,15 @@ func Init(dir string) (err error) {
 	}
 
 	output.Trunk.Subscribe(func(ctx context.Context, msg *output.Message) {
-		msg.Listen(map[string]func(name string, msg *output.Message){
-			output.TypeWechatGroup: func(name string, msg *output.Message) {
+		msg.Listen(map[string]func(name string, msg *output.Message) error{
+			output.TypeWechatGroup: func(name string, msg *output.Message) error {
 				//给群组发送消息
 				logs.Tracef("给群组[%s]发送消息[%s]\n", name, msg.Content)
+				defer func() {
+					if err != nil {
+						logs.Warnf("给群组[%s]发送消息错误： %v\n", name, err)
+					}
+				}()
 
 				mu.RLock()
 				group, ok := Groups[name]
@@ -61,8 +67,7 @@ func Init(dir string) (err error) {
 				if !ok {
 					groups, err := Self.Groups(true)
 					if err != nil {
-						logs.Warnf("给群组[%s]发送消息错误： %v\n", name, err)
-						return
+						return err
 					}
 
 					mu.Lock()
@@ -76,18 +81,20 @@ func Init(dir string) (err error) {
 					mu.Unlock()
 				}
 				if group == nil {
-					logs.Warnf("给好友[%s]发送消息错误： 群组不存在\n", name)
-					return
+					return errors.New("群组不存在")
 				}
 
-				_, err := group.SendText(msg.Content)
-				if err != nil {
-					logs.Warnf("给群组[%s]发送消息错误： %v\n", name, err)
-				}
+				_, err = group.SendText(msg.Content)
+				return err
 			},
-			output.TypeWechatFriend: func(name string, msg *output.Message) {
+			output.TypeWechatFriend: func(name string, msg *output.Message) (err error) {
 				//给好友发送消息
 				logs.Tracef("给好友[%s]发送消息[%s]\n", name, msg.Content)
+				defer func() {
+					if err != nil {
+						logs.Warnf("给好友[%s]发送消息错误： %v\n", name, err)
+					}
+				}()
 
 				mu.RLock()
 				friend, ok := Friends[name]
@@ -95,8 +102,7 @@ func Init(dir string) (err error) {
 				if !ok {
 					friends, err := Self.Friends()
 					if err != nil {
-						logs.Warnf("给好友[%s]发送消息错误： %v\n", name, err)
-						return
+						return err
 					}
 
 					mu.Lock()
@@ -118,14 +124,11 @@ func Init(dir string) (err error) {
 				}
 
 				if friend == nil {
-					logs.Warnf("给好友[%s]发送消息错误： 好友不存在\n", name)
-					return
+					return errors.New("好友不存在")
 				}
 
-				_, err := friend.SendText(msg.Content)
-				if err != nil {
-					logs.Warnf("给好友[%s]发送消息错误： %v\n", name, err)
-				}
+				_, err = friend.SendText(msg.Content)
+				return err
 			},
 		})
 

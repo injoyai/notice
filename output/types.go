@@ -58,6 +58,13 @@ type Message struct {
 	Content string         `json:"content"`         //消息内容
 	Param   map[string]any `json:"param,omitempty"` //其它参数
 	Time    int64          `json:"time"`            //
+	resp    func(any any)
+}
+
+func (this *Message) Done(resp any) {
+	if this.resp != nil {
+		this.resp(resp)
+	}
 }
 
 func (this *Message) Check(limit map[string]struct{}) error {
@@ -87,21 +94,21 @@ func (this *Message) Details() *Details {
 	}
 }
 
-func (this *Message) On(prefix string, f func(name string, msg *Message)) {
+func (this *Message) On(prefix string, f func(name string, msg *Message) error) {
 	for _, out := range this.Output {
 		if out == prefix {
-			f("", this)
+			this.Done(f("", this))
 		} else if name, ok := strings.CutPrefix(out, prefix+":"); ok {
-			f(name, this)
+			this.Done(f(name, this))
 		}
 	}
 }
 
-func (this *Message) Listen(m map[string]func(name string, msg *Message)) {
+func (this *Message) Listen(m map[string]func(name string, msg *Message) error) {
 	for _, out := range this.Output {
 		for prefix, f := range m {
 			if name, ok := strings.CutPrefix(out, prefix+":"); ok {
-				f(name, this)
+				this.Done(f(name, this))
 			}
 		}
 	}

@@ -19,7 +19,7 @@ func Init() {
 	logs.PanicErr(err)
 
 	output.Trunk.Subscribe(func(ctx context.Context, msg *output.Message) {
-		msg.On(output.TypeAliyunSMS, func(name string, msg *output.Message) {
+		msg.On(output.TypeAliyunSMS, func(name string, msg *output.Message) error {
 
 			list := strings.SplitN(name, ":", 2)
 			if len(list) == 2 {
@@ -31,8 +31,10 @@ func Init() {
 					},
 				})
 				logs.PrintErr(err)
+				return err
 			}
 
+			return nil
 		})
 	})
 }
