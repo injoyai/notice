@@ -42,8 +42,8 @@ func Init(port int) error {
 			err = forbidden.Forbidden.Check(msg.Content)
 			in.CheckErr(err)
 			//加入发送队列
-			output.Trunk.Do(msg)
-			in.Succ(nil)
+			_, err = output.Trunk.Do(msg)
+			in.Err(err)
 		})
 
 		//查询用户列表
