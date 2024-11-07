@@ -345,6 +345,7 @@
     function pushAfter(err) {
         pushBoxClick.disabled = false
         pushBoxClick.innerHTML = '推送'
+        document.getElementById('content2').value=''
         if (err === '') {
             notice('成功')
         } else {

@@ -89,7 +89,7 @@ func openUI() {
 					Push.GetString("method"),
 					Push.GetString("target"),
 					Push.GetString("type"),
-					Push.GetString("content"),
+					"", //Push.GetString("content"),
 				))
 			}
 		})
