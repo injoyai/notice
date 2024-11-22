@@ -12,6 +12,8 @@ token:
   password: ''
   db: 0
   super: 123456789 #免验证token
+  disable: true #是否禁用
+
 
 sms:
   aliyun:

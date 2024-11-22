@@ -29,15 +29,17 @@ func initToken() {
 			cfg.GetString("redis.password"),
 			cfg.GetInt("redis.db"),
 		),
-		Super: cfg.GetStrings("token.super"),
+		Super:   cfg.GetStrings("token.super"),
+		Disable: cfg.GetBool("token.disable"),
 	}
 }
 
 type tokenCache struct {
-	Type   string
-	Memory *maps.Safe
-	Redis  *redis.Client
-	Super  []string
+	Type    string
+	Memory  *maps.Safe
+	Redis   *redis.Client
+	Super   []string
+	Disable bool
 }
 
 func (this *tokenCache) Get(token string) (string, error) {
@@ -73,6 +75,9 @@ func (this *tokenCache) Set(token, username string, expiration time.Duration) er
 
 // IsSuper 超级token，可以免校验
 func (this *tokenCache) IsSuper(token string) bool {
+	if this.Disable {
+		return true
+	}
 	for _, v := range this.Super {
 		if token == v {
 			return true
