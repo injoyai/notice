@@ -31,7 +31,7 @@ func Init(port int) error {
 		})
 
 		//发送消息
-		g.POST("/notice", func(r *mux.Request) {
+		g.ALL("/notice", func(r *mux.Request) {
 			u := r.GetCache("user").Val().(*user.User)
 			msg := &output.Message{}
 			r.Parse(msg)
