@@ -32,11 +32,14 @@ func Init(dir string) (err error) {
 	Client.UUIDCallback = openwechat.PrintlnQrcodeUrl
 
 	// 登陆
-	if !oss.Exists(HotLoginFilename) {
-		os.Create(HotLoginFilename)
+	if !oss.Exists(filepath.Dir(HotLoginFilename)) {
+		os.MkdirAll(filepath.Dir(HotLoginFilename), 0666)
 	}
 	if err := Client.HotLogin(openwechat.NewFileHotReloadStorage(HotLoginFilename)); err != nil {
 		if err != io.EOF {
+			if err.Error() == "invalid storage" {
+				os.Remove(HotLoginFilename)
+			}
 			return err
 		}
 		if err := Client.Login(); err != nil {
