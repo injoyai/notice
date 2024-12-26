@@ -174,11 +174,6 @@ func onReady() {
 		systray.Quit()
 	}()
 
-	select {
-	case mShow.ClickedCh <- struct{}{}:
-	default:
-	}
-
 }
 
 func onExit() {
