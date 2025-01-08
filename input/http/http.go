@@ -3,7 +3,6 @@ package http
 import (
 	"github.com/injoyai/goutil/frame/in/v3"
 	"github.com/injoyai/goutil/frame/mux"
-	"github.com/injoyai/notice/input/forbidden"
 	"github.com/injoyai/notice/output"
 	"github.com/injoyai/notice/user"
 )
@@ -35,14 +34,8 @@ func Init(port int) error {
 			u := r.GetCache("user").Val().(*user.User)
 			msg := &output.Message{}
 			r.Parse(msg)
-			//校验发送权限
-			err := msg.Check(u.LimitMap())
-			in.CheckErr(err)
-			//检查违禁词
-			err = forbidden.Forbidden.Check(msg.Content)
-			in.CheckErr(err)
 			//加入发送队列
-			_, err = output.Trunk.Do(msg)
+			err := output.Manager.Push(u, msg)
 			in.Err(err)
 		})
 

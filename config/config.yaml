@@ -27,6 +27,11 @@ input:
   forbidden:
     - 违禁词
 
+webhook:
+  - test1:
+      url: 'https://www.example.com'
+      body: {"title": "{title}", "content": "{content}"}
+      timeout: 10s
 
 plugins:
   - prefix: 'injoy'

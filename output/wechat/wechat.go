@@ -1,11 +1,9 @@
 package wechat
 
 import (
-	"context"
 	"errors"
 	"github.com/eatmoreapple/openwechat"
 	"github.com/injoyai/goutil/oss"
-	"github.com/injoyai/logs"
 	"github.com/injoyai/notice/output"
 	"io"
 	"os"
@@ -13,129 +11,113 @@ import (
 	"sync"
 )
 
-var (
-	HotLoginFilename = "./data/cache/wechat_hot_login"
-	Client           = openwechat.DefaultBot(openwechat.Desktop) // 桌面模式
-	Self             *openwechat.Self
-	Groups           = map[string]*openwechat.Group{}
-	Friends          = map[string]*openwechat.Friend{}
-	mu               sync.RWMutex
-)
-
-func Init(dir string) (err error) {
-
-	HotLoginFilename = filepath.Join(dir, "data/cache/wechat_hot_login")
-
+func New(cacheDir string) (*Wechat, error) {
+	HotLoginFilename := filepath.Join(cacheDir, "wechat_hot_login")
+	w := &Wechat{
+		Client:  openwechat.DefaultBot(openwechat.Desktop),
+		Self:    nil,
+		Groups:  make(map[string]*openwechat.Group),
+		Friends: make(map[string]*openwechat.Friend),
+		mu:      sync.RWMutex{},
+	}
 	// 注册消息处理函数
-	Client.MessageHandler = DealMessage
+	w.Client.MessageHandler = DealMessage
 	// 注册登陆二维码回调
-	Client.UUIDCallback = openwechat.PrintlnQrcodeUrl
-
+	w.Client.UUIDCallback = openwechat.PrintlnQrcodeUrl
 	// 登陆
 	if !oss.Exists(HotLoginFilename) {
 		os.Create(HotLoginFilename)
 	}
-	if err := Client.HotLogin(openwechat.NewFileHotReloadStorage(HotLoginFilename)); err != nil {
+	err := w.Client.HotLogin(openwechat.NewFileHotReloadStorage(HotLoginFilename))
+	if err != nil {
 		if err != io.EOF {
 			if err.Error() == "invalid storage" || err.Error() == "failed login check" {
 				os.Remove(HotLoginFilename)
 			}
-			return err
+			return nil, err
 		}
-		if err := Client.Login(); err != nil {
-			return err
+		if err := w.Client.Login(); err != nil {
+			return nil, err
 		}
 	}
 
 	//获取当前用户信息
-	Self, err = Client.GetCurrentUser()
+	w.Self, err = w.Client.GetCurrentUser()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	output.Trunk.Subscribe(func(ctx context.Context, msg *output.Message) {
-		msg.Listen(map[string]func(name string, msg *output.Message) error{
-			output.TypeWechatGroup: func(name string, msg *output.Message) error {
-				//给群组发送消息
-				logs.Tracef("给群组[%s]发送消息[%s]\n", name, msg.Content)
-				defer func() {
-					if err != nil {
-						logs.Warnf("给群组[%s]发送消息错误： %v\n", name, err)
-					}
-				}()
+	return w, nil
+}
 
-				mu.RLock()
-				group, ok := Groups[name]
-				mu.RUnlock()
-				if !ok {
-					groups, err := Self.Groups(true)
-					if err != nil {
-						return err
-					}
+type Wechat struct {
+	Client  *openwechat.Bot
+	Self    *openwechat.Self
+	Groups  map[string]*openwechat.Group
+	Friends map[string]*openwechat.Friend
+	mu      sync.RWMutex
+}
 
-					mu.Lock()
-					Groups = map[string]*openwechat.Group{}
-					for _, v := range groups {
-						Groups[v.NickName] = v
-						if v.NickName == name {
-							group = v
-						}
-					}
-					mu.Unlock()
-				}
-				if group == nil {
-					return errors.New("群组不存在")
-				}
+func (this *Wechat) Types() []string {
+	return []string{output.TypeWechatGroup, output.TypeWechatFriend}
+}
 
-				_, err = group.SendText(msg.Content)
+func (this *Wechat) Push(msg *output.Message) (err error) {
+
+	switch msg.Output {
+	case output.TypeWechatGroup:
+		this.mu.RLock()
+		group, ok := this.Groups[msg.Target]
+		this.mu.RUnlock()
+		if !ok {
+			groups, err := this.Self.Groups(true)
+			if err != nil {
 				return err
-			},
-			output.TypeWechatFriend: func(name string, msg *output.Message) (err error) {
-				//给好友发送消息
-				logs.Tracef("给好友[%s]发送消息[%s]\n", name, msg.Content)
-				defer func() {
-					if err != nil {
-						logs.Warnf("给好友[%s]发送消息错误： %v\n", name, err)
-					}
-				}()
-
-				mu.RLock()
-				friend, ok := Friends[name]
-				mu.RUnlock()
-				if !ok {
-					friends, err := Self.Friends()
-					if err != nil {
-						return err
-					}
-
-					mu.Lock()
-					Friends = map[string]*openwechat.Friend{}
-					for _, v := range friends {
-						if len(v.RemarkName) > 0 {
-							Friends[v.RemarkName] = v
-							if v.RemarkName == name {
-								friend = v
-							}
-							continue
-						}
-						Friends[v.NickName] = v
-						if v.NickName == name {
-							friend = v
-						}
-					}
-					mu.Unlock()
+			}
+			this.mu.Lock()
+			this.Groups = map[string]*openwechat.Group{}
+			for _, v := range groups {
+				this.Groups[v.NickName] = v
+				if v.NickName == msg.Target {
+					group = v
 				}
+			}
+			this.mu.Unlock()
+		}
+		if group == nil {
+			return errors.New("群组不存在")
+		}
+		_, err = group.SendText(msg.Content)
 
-				if friend == nil {
-					return errors.New("好友不存在")
-				}
+	case output.TypeWechatFriend:
 
-				_, err = friend.SendText(msg.Content)
+		this.mu.RLock()
+		friend, ok := this.Friends[msg.Target]
+		this.mu.RUnlock()
+		if !ok {
+			friends, err := this.Self.Friends()
+			if err != nil {
 				return err
-			},
-		})
+			}
 
-	})
+			this.mu.Lock()
+			this.Friends = map[string]*openwechat.Friend{}
+			for _, v := range friends {
+				this.Friends[v.NickName] = v
+				if v.NickName == msg.Target {
+					friend = v
+				}
+			}
+			this.mu.Unlock()
+		}
 
-	return nil
+		if friend == nil {
+			return errors.New("好友不存在")
+		}
+
+		_, err = friend.SendText(msg.Content)
+
+	}
+
+	return
 }

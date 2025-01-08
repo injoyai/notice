@@ -1,40 +1,34 @@
 package sms
 
 import (
-	"context"
-	"github.com/injoyai/conv/cfg"
 	"github.com/injoyai/goutil/notice"
-	"github.com/injoyai/logs"
 	"github.com/injoyai/notice/output"
-	"strings"
 )
 
-func Init() {
-	Aliyun, err := notice.NewAliyunSMS(&notice.AliyunConfig{
-		SecretID:  cfg.GetString("sms.aliyun.secretID"),
-		SecretKey: cfg.GetString("sms.aliyun.secretKey"),
-		SignName:  cfg.GetString("sms.aliyun.signName"),
-		RegionID:  cfg.GetString("sms.aliyun.regionID"),
-	})
-	logs.PanicErr(err)
+type AliyunConfig = notice.AliyunConfig
 
-	output.Trunk.Subscribe(func(ctx context.Context, msg *output.Message) {
-		msg.On(output.TypeAliyunSMS, func(name string, msg *output.Message) error {
+func NewAliyun(config *AliyunConfig) (*Aliyun, error) {
+	i, err := notice.NewAliyunSMS(config)
+	if err != nil {
+		return nil, err
+	}
+	return &Aliyun{Interface: i}, nil
+}
 
-			list := strings.SplitN(name, ":", 2)
-			if len(list) == 2 {
-				err := Aliyun.Publish(&notice.Message{
-					Target: list[1],
-					Param: map[string]interface{}{
-						"TemplateID": list[0],
-						"Param":      msg.Content,
-					},
-				})
-				logs.PrintErr(err)
-				return err
-			}
+type Aliyun struct {
+	notice.Interface
+}
 
-			return nil
-		})
+func (this *Aliyun) Types() []string {
+	return []string{output.TypeAliyunSMS}
+}
+
+func (this *Aliyun) Push(msg *output.Message) error {
+	return this.Publish(&notice.Message{
+		Target: msg.Target,
+		Param: map[string]interface{}{
+			"TemplateID": msg.Target,
+			"Param":      msg.Content,
+		},
 	})
 }

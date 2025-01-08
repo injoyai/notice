@@ -2,24 +2,24 @@ package forbidden
 
 import (
 	"fmt"
-	"github.com/injoyai/conv/cfg"
 	"strings"
 )
 
-var Forbidden *forbidden
-
-func Init() {
-	Forbidden = &forbidden{
-		Words: cfg.GetStrings("input.forbidden"),
+func New(words ...string) *Forbidden {
+	return &Forbidden{
+		Words: words,
 	}
 }
 
-type forbidden struct {
+type Forbidden struct {
 	Words []string
 }
 
-func (this *forbidden) Check(content string) error {
+func (this *Forbidden) Check(title, content string) error {
 	for _, v := range this.Words {
+		if strings.Contains(title, v) {
+			return fmt.Errorf("包含违禁词:%s", v)
+		}
 		if strings.Contains(content, v) {
 			return fmt.Errorf("包含违禁词:%s", v)
 		}

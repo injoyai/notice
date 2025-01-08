@@ -12,7 +12,6 @@ import (
 	"github.com/injoyai/ios"
 	"github.com/injoyai/ios/client"
 	"github.com/injoyai/logs"
-	"github.com/injoyai/notice/output"
 	"github.com/injoyai/notice/user"
 	"github.com/injoyai/notice/util"
 	"net"
@@ -117,7 +116,7 @@ func (this *tcp) dial(address string) func(ctx context.Context) (ios.ReadWriteCl
 func (this *tcp) dealMessage(c *client.Client, msg ios.Acker) {
 	bs := msg.Payload()
 
-	resp := new(output.Resp)
+	resp := new(push.Resp)
 	if err := json.Unmarshal(bs, resp); err == nil && len(resp.ID) > 0 {
 		if resp.Success {
 			this.wait.Done(resp.ID, nil)
@@ -127,16 +126,16 @@ func (this *tcp) dealMessage(c *client.Client, msg ios.Acker) {
 		return
 	}
 
-	data := new(output.Details)
+	data := new(push.Details)
 	if err := json.Unmarshal(bs, data); err != nil {
 		logs.Err(err)
 		return
 	}
 	var err error
 	switch data.Type {
-	case output.WinTypeVoice:
+	case push.WinTypeVoice:
 		err = notice.DefaultVoice.Speak(data.Content)
-	case output.WinTypePopup:
+	case push.WinTypePopup:
 		err = notice.DefaultWindows.Publish(&notice.Message{
 			Target:  notice.TargetPopup,
 			Title:   data.Title,

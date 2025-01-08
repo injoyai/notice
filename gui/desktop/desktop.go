@@ -9,7 +9,6 @@ import (
 	"github.com/injoyai/goutil/cache"
 	"github.com/injoyai/goutil/oss"
 	"github.com/injoyai/lorca"
-	"github.com/injoyai/notice/output"
 	"os"
 	"path/filepath"
 	"time"
@@ -103,7 +102,7 @@ func openUI() {
 
 			app.Eval("pushBefore()")
 			id := g.RandString(16)
-			err := TCP.WriteAny(output.Message{
+			err := TCP.WriteAny(push.Message{
 				ID:      id,
 				Output:  []string{method + ":" + target},
 				Type:    Type,
