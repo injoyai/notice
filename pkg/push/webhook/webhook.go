@@ -3,7 +3,7 @@ package webhook
 import (
 	"errors"
 	"github.com/injoyai/goutil/net/http"
-	"github.com/injoyai/notice/output"
+	"github.com/injoyai/notice/pkg/push"
 	"strings"
 	"time"
 )
@@ -17,10 +17,10 @@ type Webhook struct {
 }
 
 func (this *Webhook) Types() []string {
-	return []string{output.TypeWebhook}
+	return []string{push.TypeWebhook}
 }
 
-func (this *Webhook) Push(msg *output.Message) error {
+func (this *Webhook) Push(msg *push.Message) error {
 	w, ok := this.m[msg.Target]
 	if !ok {
 		return errors.New("webhook不存在: " + msg.Target)

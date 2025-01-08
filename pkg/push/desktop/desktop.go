@@ -9,8 +9,8 @@ import (
 	"github.com/injoyai/ios/server"
 	"github.com/injoyai/ios/server/listen"
 	"github.com/injoyai/logs"
-	"github.com/injoyai/notice/output"
-	"github.com/injoyai/notice/user"
+	"github.com/injoyai/notice/pkg/push"
+	"github.com/injoyai/notice/pkg/user"
 	"time"
 )
 
@@ -57,7 +57,7 @@ func New(port int) (*Desktop, error) {
 
 	return &Desktop{
 		Server: s,
-		f: func(name string, msg *output.Message, Type string) error {
+		f: func(name string, msg *push.Message, Type string) error {
 			//给桌面端发送消息
 			logs.Tracef("给桌面端[%s]发送消息[%s]\n", name, msg.Content)
 
@@ -78,28 +78,28 @@ func New(port int) (*Desktop, error) {
 
 type Desktop struct {
 	*server.Server
-	f func(name string, msg *output.Message, Type string) error
+	f func(name string, msg *push.Message, Type string) error
 }
 
 func (this *Desktop) Types() []string {
 	return []string{
-		output.TypeDesktopNotice,
-		output.TypeDesktopVoice,
-		output.TypeDesktopPopup,
+		push.TypeDesktopNotice,
+		push.TypeDesktopVoice,
+		push.TypeDesktopPopup,
 	}
 }
 
-func (this *Desktop) Push(msg *output.Message) (err error) {
+func (this *Desktop) Push(msg *push.Message) (err error) {
 
 	switch msg.Method {
-	case output.TypeDesktopNotice:
-		err = this.f(msg.Target, msg, output.WinTypeNotice)
+	case push.TypeDesktopNotice:
+		err = this.f(msg.Target, msg, push.WinTypeNotice)
 
-	case output.TypeDesktopVoice:
-		err = this.f(msg.Target, msg, output.WinTypeVoice)
+	case push.TypeDesktopVoice:
+		err = this.f(msg.Target, msg, push.WinTypeVoice)
 
-	case output.TypeDesktopPopup:
-		err = this.f(msg.Target, msg, output.WinTypePopup)
+	case push.TypeDesktopPopup:
+		err = this.f(msg.Target, msg, push.WinTypePopup)
 
 	}
 
@@ -108,7 +108,7 @@ func (this *Desktop) Push(msg *output.Message) (err error) {
 
 func dealMessage(c *client.Client, msg ios.Acker) {
 
-	data := new(output.Message)
+	data := new(push.Message)
 	if err := json.Unmarshal(msg.Payload(), data); err != nil {
 		logs.Warn("解析消息失败", err)
 		return
@@ -124,7 +124,7 @@ func dealMessage(c *client.Client, msg ios.Acker) {
 		return
 	}
 
-	err = output.Manager.Push(u, data)
+	err = push.Manager.Push(u, data)
 
 	c.WriteAny(Resp{
 		ID:      data.ID,

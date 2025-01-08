@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/eatmoreapple/openwechat"
 	"github.com/injoyai/goutil/oss"
-	"github.com/injoyai/notice/output"
+	"github.com/injoyai/notice/pkg/push"
 	"io"
 	"os"
 	"path/filepath"
@@ -21,7 +21,7 @@ func New(cacheDir string) (*Wechat, error) {
 		mu:      sync.RWMutex{},
 	}
 	// 注册消息处理函数
-	w.Client.MessageHandler = DealMessage
+	w.Client.MessageHandler = w.DealMessage
 	// 注册登陆二维码回调
 	w.Client.UUIDCallback = openwechat.PrintlnQrcodeUrl
 	// 登陆
@@ -59,13 +59,13 @@ type Wechat struct {
 }
 
 func (this *Wechat) Types() []string {
-	return []string{output.TypeWechatGroup, output.TypeWechatFriend}
+	return []string{push.TypeWechatGroup, push.TypeWechatFriend}
 }
 
-func (this *Wechat) Push(msg *output.Message) (err error) {
+func (this *Wechat) Push(msg *push.Message) (err error) {
 
-	switch msg.Output {
-	case output.TypeWechatGroup:
+	switch msg.Method {
+	case push.TypeWechatGroup:
 		this.mu.RLock()
 		group, ok := this.Groups[msg.Target]
 		this.mu.RUnlock()
@@ -89,7 +89,7 @@ func (this *Wechat) Push(msg *output.Message) (err error) {
 		}
 		_, err = group.SendText(msg.Content)
 
-	case output.TypeWechatFriend:
+	case push.TypeWechatFriend:
 
 		this.mu.RLock()
 		friend, ok := this.Friends[msg.Target]

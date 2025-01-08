@@ -5,7 +5,6 @@ import (
 	"github.com/injoyai/base/g"
 	"github.com/injoyai/base/maps"
 	"github.com/injoyai/minidb"
-	"github.com/injoyai/notice/output"
 	"path/filepath"
 	"time"
 )
@@ -57,7 +56,7 @@ func (this *User) LimitMap() map[string]struct{} {
 
 func CheckToken(token string) (*User, error) {
 	if Token.IsSuper(token) {
-		return &User{Username: "super", Limit: []string{output.TypeAll}}, nil
+		return &User{Username: "admin", Limit: []string{}}, nil
 	}
 	username, err := Token.Get(token)
 	if err != nil {

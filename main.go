@@ -5,18 +5,18 @@ import (
 	"github.com/injoyai/conv/cfg"
 	"github.com/injoyai/conv/codec"
 	"github.com/injoyai/logs"
-	"github.com/injoyai/notice/input/forbidden"
-	"github.com/injoyai/notice/input/http"
-	"github.com/injoyai/notice/output"
-	"github.com/injoyai/notice/output/desktop"
-	"github.com/injoyai/notice/output/gotify"
-	"github.com/injoyai/notice/output/plugin"
-	"github.com/injoyai/notice/output/pushplus"
-	"github.com/injoyai/notice/output/script"
-	"github.com/injoyai/notice/output/sms"
-	"github.com/injoyai/notice/output/webhook"
-	"github.com/injoyai/notice/output/wechat"
-	"github.com/injoyai/notice/user"
+	"github.com/injoyai/notice/pkg/forbidden"
+	"github.com/injoyai/notice/pkg/http"
+	"github.com/injoyai/notice/pkg/push"
+	"github.com/injoyai/notice/pkg/push/desktop"
+	"github.com/injoyai/notice/pkg/push/gotify"
+	"github.com/injoyai/notice/pkg/push/plugin"
+	"github.com/injoyai/notice/pkg/push/pushplus"
+	"github.com/injoyai/notice/pkg/push/script"
+	"github.com/injoyai/notice/pkg/push/sms"
+	"github.com/injoyai/notice/pkg/push/webhook"
+	"github.com/injoyai/notice/pkg/push/wechat"
+	"github.com/injoyai/notice/pkg/user"
 	"os"
 	"path/filepath"
 )
@@ -70,11 +70,11 @@ func main() {
 	_script := script.New(20, nil)
 
 	//消息中间件
-	output.Manager.Use(func(u *user.User, msg *output.Message) error {
+	push.Manager.Use(func(u *user.User, msg *push.Message) error {
 		//校验权限
 		limit := u.LimitMap()
 		if len(limit) > 0 {
-			if _, ok := limit[output.TypeAll]; !ok {
+			if _, ok := limit[push.TypeAll]; !ok {
 				if _, ok2 := limit[msg.Method]; !ok2 {
 					return errors.New("无权限")
 				}
@@ -85,7 +85,7 @@ func main() {
 	})
 
 	//注册pusher
-	output.Manager.Register(
+	push.Manager.Register(
 		_sms,
 		_wechat,
 		_gotify,

@@ -1,4 +1,4 @@
-package output
+package push
 
 type Interface interface {
 	Types() []string

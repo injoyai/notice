@@ -1,4 +1,4 @@
-package output
+package push
 
 type From struct {
 	Method string `json:"method"` //推送方式

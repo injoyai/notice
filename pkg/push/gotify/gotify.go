@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/injoyai/goutil/g"
 	"github.com/injoyai/goutil/net/http"
-	"github.com/injoyai/notice/output"
+	"github.com/injoyai/notice/pkg/push"
 )
 
 func New(host, token string, priority int) *Gotify {
@@ -22,10 +22,10 @@ type Gotify struct {
 }
 
 func (this *Gotify) Types() []string {
-	return []string{output.TypeGotify}
+	return []string{push.TypeGotify}
 }
 
-func (this *Gotify) Push(msg *output.Message) error {
+func (this *Gotify) Push(msg *push.Message) error {
 	return http.Url(fmt.Sprintf("%s/message?token=%s", this.Host, this.Token)).SetBody(g.Map{
 		"title":    msg.Title,
 		"message":  msg.Content,

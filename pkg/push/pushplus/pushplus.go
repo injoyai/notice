@@ -3,7 +3,7 @@ package pushplus
 import (
 	"github.com/injoyai/goutil/g"
 	"github.com/injoyai/goutil/net/http"
-	"github.com/injoyai/notice/output"
+	"github.com/injoyai/notice/pkg/push"
 )
 
 var url = "http://www.pushplus.plus/send"
@@ -17,10 +17,10 @@ type PushPlus struct {
 }
 
 func (this *PushPlus) Types() []string {
-	return []string{output.TypePushPlus}
+	return []string{push.TypePushPlus}
 }
 
-func (this *PushPlus) Push(msg *output.Message) error {
+func (this *PushPlus) Push(msg *push.Message) error {
 	return http.Url(url).SetBody(g.Map{
 		"token":   this.Token,
 		"title":   msg.Title,

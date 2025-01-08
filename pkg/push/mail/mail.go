@@ -3,7 +3,7 @@ package mail
 import (
 	"crypto/tls"
 	"github.com/injoyai/conv"
-	"github.com/injoyai/notice/output"
+	"github.com/injoyai/notice/push"
 	"gopkg.in/gomail.v2"
 	"strings"
 )
@@ -31,8 +31,8 @@ type Mail struct {
 	*gomail.Dialer
 }
 
-func (this *Mail) Push(msg *output.Message) (pushed bool, err error) {
-	if pushed = msg.Output == output.TypeMail; !pushed {
+func (this *Mail) Push(msg *push.Message) (pushed bool, err error) {
+	if pushed = msg.Output == push.TypeMail; !pushed {
 		m := gomail.NewMessage()
 		m.SetHeader("From", this.Username) // 发件人
 		//m.SetHeader("From", "alias"+"<"+userName+">") // 增加发件人别名

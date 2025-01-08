@@ -1,4 +1,4 @@
-package output
+package push
 
 const (
 	TypeAll           = "all"            //全部

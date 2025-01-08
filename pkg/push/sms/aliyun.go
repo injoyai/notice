@@ -2,7 +2,7 @@ package sms
 
 import (
 	"github.com/injoyai/goutil/notice"
-	"github.com/injoyai/notice/output"
+	"github.com/injoyai/notice/pkg/push"
 )
 
 type AliyunConfig = notice.AliyunConfig
@@ -20,10 +20,10 @@ type Aliyun struct {
 }
 
 func (this *Aliyun) Types() []string {
-	return []string{output.TypeAliyunSMS}
+	return []string{push.TypeAliyunSMS}
 }
 
-func (this *Aliyun) Push(msg *output.Message) error {
+func (this *Aliyun) Push(msg *push.Message) error {
 	return this.Publish(&notice.Message{
 		Target: msg.Target,
 		Param: map[string]interface{}{

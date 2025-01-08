@@ -3,8 +3,8 @@ package http
 import (
 	"github.com/injoyai/goutil/frame/in/v3"
 	"github.com/injoyai/goutil/frame/mux"
-	"github.com/injoyai/notice/output"
-	"github.com/injoyai/notice/user"
+	"github.com/injoyai/notice/pkg/push"
+	"github.com/injoyai/notice/pkg/user"
 )
 
 func Init(port int) error {
@@ -32,10 +32,10 @@ func Init(port int) error {
 		//发送消息
 		g.ALL("/notice", func(r *mux.Request) {
 			u := r.GetCache("user").Val().(*user.User)
-			msg := &output.Message{}
+			msg := &push.Message{}
 			r.Parse(msg)
 			//加入发送队列
-			err := output.Manager.Push(u, msg)
+			err := push.Manager.Push(u, msg)
 			in.Err(err)
 		})
 

@@ -1,8 +1,8 @@
-package output
+package push
 
 import (
 	"errors"
-	"github.com/injoyai/notice/user"
+	"github.com/injoyai/notice/pkg/user"
 )
 
 var Manager = &Manage{}

@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func DealMessage(msg *openwechat.Message) {
+func (this *Wechat) DealMessage(msg *openwechat.Message) {
 	if msg.IsText() {
 		logs.Read(msg.Content)
 
@@ -21,7 +21,7 @@ func DealMessage(msg *openwechat.Message) {
 			return
 		}
 
-		after, ok := strings.CutPrefix(msg.Content, "@"+Self.NickName)
+		after, ok := strings.CutPrefix(msg.Content, "@"+this.Self.NickName)
 		if ok || msg.IsSendByFriend() {
 			result, err := llama(after)
 			if err != nil {

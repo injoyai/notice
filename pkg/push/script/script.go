@@ -3,7 +3,7 @@ package script
 import (
 	"errors"
 	"github.com/injoyai/goutil/script/js"
-	"github.com/injoyai/notice/output"
+	"github.com/injoyai/notice/pkg/push"
 )
 
 func New(pool int, m map[string]string) *Script {
@@ -22,10 +22,10 @@ type Script struct {
 }
 
 func (this *Script) Types() []string {
-	return []string{output.TypeScript}
+	return []string{push.TypeScript}
 }
 
-func (this *Script) Push(msg *output.Message) error {
+func (this *Script) Push(msg *push.Message) error {
 	s, ok := this.m[msg.Target]
 	if !ok {
 		return errors.New("脚本不存在: " + msg.Target)
