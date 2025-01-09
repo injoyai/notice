@@ -5,8 +5,8 @@ import (
 	"github.com/injoyai/conv/cfg"
 	"github.com/injoyai/conv/codec"
 	"github.com/injoyai/logs"
-	"github.com/injoyai/notice/pkg/forbidden"
-	"github.com/injoyai/notice/pkg/http"
+	"github.com/injoyai/notice/pkg/api"
+	"github.com/injoyai/notice/pkg/middle/forbidden"
 	"github.com/injoyai/notice/pkg/push"
 	"github.com/injoyai/notice/pkg/push/desktop"
 	"github.com/injoyai/notice/pkg/push/gotify"
@@ -105,5 +105,5 @@ func main() {
 	logs.PanicErr(user.Init(DataDir))
 
 	//加载http服务
-	http.Init(cfg.GetInt("http.port", 8426))
+	api.Init(cfg.GetInt("http.port", 8426))
 }
