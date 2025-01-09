@@ -13,6 +13,7 @@ import (
 	"github.com/injoyai/notice/pkg/push/plugin"
 	"github.com/injoyai/notice/pkg/push/pushplus"
 	"github.com/injoyai/notice/pkg/push/script"
+	"github.com/injoyai/notice/pkg/push/serverchan"
 	"github.com/injoyai/notice/pkg/push/sms"
 	"github.com/injoyai/notice/pkg/push/webhook"
 	"github.com/injoyai/notice/pkg/push/wechat"
@@ -63,6 +64,9 @@ func main() {
 	//pushplus
 	_pushplus := pushplus.New(cfg.GetString("pushplus.token"))
 
+	//server酱
+	_serverchan := serverchan.New(cfg.GetString("serverchan.sendkey"))
+
 	//插件
 	_plugin := plugin.New()
 
@@ -92,6 +96,7 @@ func main() {
 		_desktop,
 		_webhook,
 		_pushplus,
+		_serverchan,
 		_plugin,
 		_script,
 	)

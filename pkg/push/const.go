@@ -19,6 +19,7 @@ const (
 	TypeWebhook       = "webhook"        //webhook
 	TypePlugin        = "plugin"         //插件
 	TypeScript        = "script"         //脚本
+	TypeDingTalk      = "dingtalk"       //钉钉
 )
 
 const (

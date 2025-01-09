@@ -3,7 +3,7 @@ package mail
 import (
 	"crypto/tls"
 	"github.com/injoyai/conv"
-	"github.com/injoyai/notice/push"
+	"github.com/injoyai/notice/pkg/push"
 	"gopkg.in/gomail.v2"
 	"strings"
 )
@@ -31,30 +31,31 @@ type Mail struct {
 	*gomail.Dialer
 }
 
-func (this *Mail) Push(msg *push.Message) (pushed bool, err error) {
-	if pushed = msg.Output == push.TypeMail; !pushed {
-		m := gomail.NewMessage()
-		m.SetHeader("From", this.Username) // 发件人
-		//m.SetHeader("From", "alias"+"<"+userName+">") // 增加发件人别名
+func (this *Mail) Types() []string {
+	return []string{push.TypeMail}
+}
 
-		m.SetHeader("To", strings.Split(msg.Target, ",")...)                        // 收件人，可以多个收件人，但必须使用相同的 SMTP 连接
-		m.SetHeader("Cc", strings.Split(conv.String(msg.Param["copyTo"]), ",")...)  // 抄送，可以多个
-		m.SetHeader("Bcc", strings.Split(conv.String(msg.Param["darkTo"]), ",")...) // 暗送，可以多个
-		m.SetHeader("Subject", msg.Title)                                           // 邮件主题
+func (this *Mail) Push(msg *push.Message) error {
+	m := gomail.NewMessage()
+	m.SetHeader("From", this.Username) // 发件人
+	//m.SetHeader("From", "alias"+"<"+userName+">") // 增加发件人别名
 
-		// text/html 的意思是将文件的 content-type 设置为 text/html 的形式，浏览器在获取到这种文件时会自动调用html的解析器对文件进行相应的处理。
-		// 可以通过 text/html 处理文本格式进行特殊处理，如换行、缩进、加粗等等
-		m.SetBody("text/html", msg.Content)
+	m.SetHeader("To", strings.Split(msg.Target, ",")...)                        // 收件人，可以多个收件人，但必须使用相同的 SMTP 连接
+	m.SetHeader("Cc", strings.Split(conv.String(msg.Param["copyTo"]), ",")...)  // 抄送，可以多个
+	m.SetHeader("Bcc", strings.Split(conv.String(msg.Param["darkTo"]), ",")...) // 暗送，可以多个
+	m.SetHeader("Subject", msg.Title)                                           // 邮件主题
 
-		// text/plain的意思是将文件设置为纯文本的形式，浏览器在获取到这种文件时并不会对其进行处理
-		// m.SetBody("text/plain", "纯文本")
-		// m.Attach("test.sh")   // 附件文件，可以是文件，照片，视频等等
-		// m.Attach("lolcatVideo.mp4") // 视频
-		// m.Attach("lolcat.jpg") // 照片
+	// text/html 的意思是将文件的 content-type 设置为 text/html 的形式，浏览器在获取到这种文件时会自动调用html的解析器对文件进行相应的处理。
+	// 可以通过 text/html 处理文本格式进行特殊处理，如换行、缩进、加粗等等
+	m.SetBody("text/html", msg.Content)
 
-		err = this.DialAndSend(m)
-	}
-	return
+	// text/plain的意思是将文件设置为纯文本的形式，浏览器在获取到这种文件时并不会对其进行处理
+	// m.SetBody("text/plain", "纯文本")
+	// m.Attach("test.sh")   // 附件文件，可以是文件，照片，视频等等
+	// m.Attach("lolcatVideo.mp4") // 视频
+	// m.Attach("lolcat.jpg") // 照片
+
+	return this.DialAndSend(m)
 }
 
 type Config struct {

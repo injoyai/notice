@@ -12,8 +12,10 @@ import (
 	"github.com/injoyai/ios"
 	"github.com/injoyai/ios/client"
 	"github.com/injoyai/logs"
-	"github.com/injoyai/notice/user"
-	"github.com/injoyai/notice/util"
+	"github.com/injoyai/notice/pkg/push"
+	"github.com/injoyai/notice/pkg/push/desktop"
+	"github.com/injoyai/notice/pkg/user"
+	"github.com/injoyai/notice/pkg/util"
 	"net"
 	"time"
 )
@@ -116,7 +118,7 @@ func (this *tcp) dial(address string) func(ctx context.Context) (ios.ReadWriteCl
 func (this *tcp) dealMessage(c *client.Client, msg ios.Acker) {
 	bs := msg.Payload()
 
-	resp := new(push.Resp)
+	resp := new(desktop.Resp)
 	if err := json.Unmarshal(bs, resp); err == nil && len(resp.ID) > 0 {
 		if resp.Success {
 			this.wait.Done(resp.ID, nil)
@@ -126,7 +128,7 @@ func (this *tcp) dealMessage(c *client.Client, msg ios.Acker) {
 		return
 	}
 
-	data := new(push.Details)
+	data := new(desktop.Req)
 	if err := json.Unmarshal(bs, data); err != nil {
 		logs.Err(err)
 		return
