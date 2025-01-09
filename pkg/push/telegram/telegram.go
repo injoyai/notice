@@ -22,6 +22,8 @@ type Telegram struct {
 	Bot *telebot.Bot
 }
 
+func (this *Telegram) Types() []string { return []string{push.TypeTelegram} }
+
 func (this *Telegram) Push(msg *push.Message) error {
 	_, err := this.Bot.Send(ID(msg.Target), msg.Content)
 	return err
