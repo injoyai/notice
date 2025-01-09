@@ -14,6 +14,7 @@ const (
 	TypeTencentSMS    = "tencent:sms"    //腾讯云短信
 	TypeTencentVoice  = "tencent:voice"  //腾讯云语音
 	TypePushPlus      = "pushplus"       //pushplus
+	TypeServerChan    = "serverchan"     //serverchan
 	TypeGotify        = "gotify"         //gotify
 	TypeWebhook       = "webhook"        //webhook
 	TypePlugin        = "plugin"         //插件
