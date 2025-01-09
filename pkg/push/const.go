@@ -21,6 +21,9 @@ const (
 	TypeScript        = "script"         //脚本
 	TypeDingTalk      = "dingtalk"       //钉钉
 	TypeTelegram      = "telegram"       //telegram
+	TypeLocalVideo    = "local:video"    //本机.语音
+	TypeLocalPopup    = "local:popup"    //本机.弹窗
+	TypeLocalNotice   = "local:notice"   //本机.通知
 )
 
 const (
