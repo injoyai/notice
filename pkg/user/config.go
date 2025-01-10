@@ -10,12 +10,37 @@ import (
 	"time"
 )
 
+// DefaultSignal 默认签名算法
+func DefaultSignal(username, password string, timestamp time.Time) string {
+	h := sha256.New()
+	h.Write([]byte(username + password + conv.String(timestamp.Unix())))
+	bs := h.Sum(nil)
+	return hex.EncodeToString(bs)
+}
+
 // Signal 签名算法，可在这里自定义
 func Signal(username, password string, timestamp time.Time) string {
 	h := sha256.New()
 	h.Write([]byte(username + password + conv.String(timestamp.Unix())))
 	bs := h.Sum(nil)
 	return hex.EncodeToString(bs)
+}
+
+type Config struct {
+	Signal func(username, password string, timestamp time.Time) string
+}
+
+type AuthConfig struct {
+	Enable bool   //启用
+	Type   string //类型,redis,memory,db 等方式
+	Redis  struct {
+		Address  string
+		Password string
+		DB       int
+	}
+	Memory struct {
+		Expire time.Duration
+	}
 }
 
 var Token *tokenCache

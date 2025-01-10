@@ -10,6 +10,11 @@ import (
 	"time"
 )
 
+const (
+	Admin = "admin"
+	All   = "all"
+)
+
 var (
 	DB    *xorms.Engine
 	Cache = maps.NewSafe()
@@ -24,7 +29,7 @@ func Init(dir string) (err error) {
 	if err := DB.Sync(new(User)); err != nil {
 		return err
 	}
-	data, err := All()
+	data, err := GetAll()
 	if err != nil {
 		return err
 	}
@@ -59,7 +64,7 @@ func (this *User) LimitMap() map[string]struct{} {
 
 func CheckToken(token string) (*User, error) {
 	if Token.IsSuper(token) {
-		return &User{Username: "admin", Limit: []string{}}, nil
+		return &User{Username: Admin, Limit: []string{All}}, nil
 	}
 	username, err := Token.Get(token)
 	if err != nil {
@@ -106,7 +111,7 @@ func Login(req *LoginReq) (string, error) {
 	return token, err
 }
 
-func All() ([]*User, error) {
+func GetAll() ([]*User, error) {
 	data := []*User(nil)
 	err := DB.Find(&data)
 	return data, err

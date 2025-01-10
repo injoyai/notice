@@ -54,10 +54,10 @@ func Default(dataDir string) {
 	_webhook := webhook.New(nil)
 
 	//pushplus
-	_pushplus := pushplus.New(cfg.GetString("pushplus.token"))
+	_pushPlus := pushplus.New(cfg.GetString("pushplus.token"))
 
 	//server酱
-	_serverchan := serverchan.New(cfg.GetString("serverchan.sendkey"))
+	_serverChan := serverchan.New(cfg.GetString("serverchan.sendkey"))
 
 	//插件
 	_plugin := plugin.New()
@@ -96,8 +96,8 @@ func Default(dataDir string) {
 		_gotify,
 		_desktop,
 		_webhook,
-		_pushplus,
-		_serverchan,
+		_pushPlus,
+		_serverChan,
 		_plugin,
 		_script,
 		_dingTalk,

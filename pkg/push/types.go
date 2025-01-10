@@ -1,7 +1,8 @@
 package push
 
 type From struct {
-	Method string `json:"method"` //推送方式
+	Type     string `json:"method"`   //推送方式,tcp,http...
+	Username string `json:"username"` //用户名
 }
 
 // Message 消息格式
