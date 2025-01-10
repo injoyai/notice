@@ -4,19 +4,22 @@ import (
 	"errors"
 	"github.com/injoyai/base/g"
 	"github.com/injoyai/base/maps"
-	"github.com/injoyai/minidb"
+	"github.com/injoyai/goutil/database/sqlite"
+	"github.com/injoyai/goutil/database/xorms"
 	"path/filepath"
 	"time"
 )
 
 var (
-	DB    *minidb.DB
+	DB    *xorms.Engine
 	Cache = maps.NewSafe()
 )
 
-func Init(dir string) error {
-	DB = minidb.New(filepath.Join(dir, "data/database/"), "default")
-
+func Init(dir string) (err error) {
+	DB, err = sqlite.NewXorm(filepath.Join(dir, "database/user.db"))
+	if err != nil {
+		return
+	}
 	initToken()
 	if err := DB.Sync(new(User)); err != nil {
 		return err
@@ -121,13 +124,13 @@ func Create(user *User) error {
 		return err
 	}
 	if u == nil {
-		err = DB.Insert(user)
+		_, err = DB.Insert(user)
 		if err == nil {
 			Cache.Set(user.Username, user)
 		}
 		return err
 	}
-	err = DB.Where("Username=?", user.Username).Update(user)
+	_, err = DB.Where("Username=?", user.Username).Update(user)
 	if err == nil {
 		Cache.Set(user.Username, user)
 	}
@@ -135,7 +138,7 @@ func Create(user *User) error {
 }
 
 func Del(username string) error {
-	err := DB.Where("Username=?", username).Delete(&User{})
+	_, err := DB.Where("Username=?", username).Delete(&User{})
 	if err == nil {
 		Cache.Del(username)
 	}

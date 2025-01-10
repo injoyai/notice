@@ -1,8 +1,8 @@
-package main
+package notice
 
 import (
 	"errors"
-	"github.com/injoyai/conv/cfg"
+	cfg2 "github.com/injoyai/conv/cfg/v2"
 	"github.com/injoyai/conv/codec"
 	"github.com/injoyai/logs"
 	"github.com/injoyai/notice/pkg/api"
@@ -18,30 +18,19 @@ import (
 	"github.com/injoyai/notice/pkg/push/webhook"
 	"github.com/injoyai/notice/pkg/push/wechat"
 	"github.com/injoyai/notice/pkg/user"
-	"os"
 	"path/filepath"
 )
 
-var DataDir = "./"
+func Default(dataDir string) {
 
-func init() {
-	switch {
-	case len(os.Args) > 1:
-		DataDir = os.Args[1]
-	default:
-		DataDir = "./"
-	}
-	cfg.Init(filepath.Join(DataDir, "/config/config.yaml"), codec.Yaml)
-}
-
-func main() {
+	cfg := cfg2.New(cfg2.WithFile(filepath.Join(dataDir, "/config/config.yaml"), codec.Yaml))
 
 	//加载短信
 	_sms, err := sms.NewAliyun(&sms.AliyunConfig{})
 	logs.PanicErr(err)
 
 	//加载微信通知
-	_wechat, err := wechat.New(DataDir)
+	_wechat, err := wechat.New(dataDir)
 	logs.PanicErr(err)
 
 	//gotify
@@ -102,7 +91,7 @@ func main() {
 	)
 
 	//加载用户
-	logs.PanicErr(user.Init(DataDir))
+	logs.PanicErr(user.Init(dataDir))
 
 	//加载http服务
 	api.Init(cfg.GetInt("http.port", 8426))

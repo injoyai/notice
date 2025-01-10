@@ -2,12 +2,16 @@ package wechat
 
 import (
 	"errors"
+	"fmt"
 	"github.com/eatmoreapple/openwechat"
 	"github.com/injoyai/goutil/oss"
+	"github.com/injoyai/logs"
 	"github.com/injoyai/notice/pkg/push"
+	"github.com/skip2/go-qrcode"
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sync"
 )
 
@@ -22,23 +26,28 @@ func New(cacheDir string) (*Wechat, error) {
 	}
 	// 注册消息处理函数
 	w.Client.MessageHandler = w.DealMessage
-	// 注册登陆二维码回调
-	w.Client.UUIDCallback = openwechat.PrintlnQrcodeUrl
+	// 注册登陆二维码回调 openwechat.PrintlnQrcodeUrl
+	w.Client.UUIDCallback = w.PrintQrcode
+	// 创建文件
+	oss.NewNotExist(HotLoginFilename, "")
 	// 登陆
-	if !oss.Exists(HotLoginFilename) {
-		os.Create(HotLoginFilename)
-	}
 	err := w.Client.HotLogin(openwechat.NewFileHotReloadStorage(HotLoginFilename))
 	if err != nil {
-		if err != io.EOF {
-			if err.Error() == "invalid storage" || err.Error() == "failed login check" {
-				os.Remove(HotLoginFilename)
+		switch err.Error() {
+		case io.EOF.Error():
+			err = w.Client.Login()
+		case "invalid storage", "cookie invalid", "failed login check":
+			f, er := os.Create(HotLoginFilename)
+			if er == nil {
+				f.Truncate(0)
+				f.Close()
 			}
-			return nil, err
+			err = w.Client.HotLogin(openwechat.NewFileHotReloadStorage(HotLoginFilename))
+			logs.Debug(err)
 		}
-		if err := w.Client.Login(); err != nil {
-			return nil, err
-		}
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	//获取当前用户信息
@@ -120,4 +129,31 @@ func (this *Wechat) Push(msg *push.Message) (err error) {
 	}
 
 	return
+}
+
+func (this *Wechat) PrintQrcode(uuid string) {
+	switch runtime.GOOS {
+	case "windows":
+		openwechat.PrintlnQrcodeUrl(uuid)
+		//return
+	}
+
+	url := "https://login.weixin.qq.com/l/" + uuid
+	//fmt.Println(url)
+	qr, err := qrcode.New(url, qrcode.Medium)
+	if err == nil {
+		s := ""
+		for _, line := range qr.Bitmap() {
+			for _, r := range line {
+				if r {
+					s += "   "
+				} else {
+					s += "███"
+				}
+			}
+			s += "\n"
+		}
+		fmt.Println(s)
+	}
+
 }

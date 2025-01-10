@@ -5,7 +5,9 @@ import (
 	"github.com/injoyai/notice/pkg/user"
 )
 
-var Manager = &Manage{}
+var Manager = &Manage{
+	pusher: map[string][]Interface{},
+}
 
 type Manage struct {
 	use    []func(from *user.User, msg *Message) error
