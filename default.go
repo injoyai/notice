@@ -9,12 +9,15 @@ import (
 	"github.com/injoyai/notice/pkg/middle/forbidden"
 	"github.com/injoyai/notice/pkg/push"
 	"github.com/injoyai/notice/pkg/push/desktop"
+	"github.com/injoyai/notice/pkg/push/dingtalk"
 	"github.com/injoyai/notice/pkg/push/gotify"
+	"github.com/injoyai/notice/pkg/push/local"
 	"github.com/injoyai/notice/pkg/push/plugin"
 	"github.com/injoyai/notice/pkg/push/pushplus"
 	"github.com/injoyai/notice/pkg/push/script"
 	"github.com/injoyai/notice/pkg/push/serverchan"
 	"github.com/injoyai/notice/pkg/push/sms"
+	"github.com/injoyai/notice/pkg/push/telegram"
 	"github.com/injoyai/notice/pkg/push/webhook"
 	"github.com/injoyai/notice/pkg/push/wechat"
 	"github.com/injoyai/notice/pkg/user"
@@ -62,6 +65,15 @@ func Default(dataDir string) {
 	//脚本
 	_script := script.New(20, nil)
 
+	//钉钉
+	_dingTalk := dingtalk.New()
+
+	//telegram
+	_telegram, err := telegram.New(cfg.GetString("telegram.token"))
+
+	//本机
+	_local := local.New()
+
 	//消息中间件
 	push.Manager.Use(func(u *user.User, msg *push.Message) error {
 		//校验权限
@@ -88,6 +100,9 @@ func Default(dataDir string) {
 		_serverchan,
 		_plugin,
 		_script,
+		_dingTalk,
+		_telegram,
+		_local,
 	)
 
 	//加载用户

@@ -9,6 +9,10 @@ import (
 	"unsafe"
 )
 
+func New() *Local {
+	return &Local{}
+}
+
 type Local struct{}
 
 func (this *Local) Types() []string {
