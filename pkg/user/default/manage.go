@@ -11,8 +11,15 @@ const (
 	Memory = "memory"
 )
 
+var Token *Manage
+
+var Manager = NewManage(nil)
+
 func NewManage(cfg *Config) *Manage {
-	return &Manage{
+	if cfg == nil {
+		cfg = &Config{}
+	}
+	m := &Manage{
 		Config: cfg,
 		Cache: func() Cache2 {
 			switch cfg.Auth.Type {
@@ -26,8 +33,12 @@ func NewManage(cfg *Config) *Manage {
 				}
 			}
 		}(),
-		Signal: nil,
+		Signal: cfg.Signal,
 	}
+	if m.Signal == nil {
+		m.Signal = Signal
+	}
+	return m
 }
 
 type Manage struct {

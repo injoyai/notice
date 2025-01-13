@@ -35,7 +35,8 @@ func Init(conf *Config) (err error) {
 		return
 	}
 
-	initToken()
+	Token = NewManage(conf)
+
 	if err = DB.Sync(new(User)); err != nil {
 		return err
 	}
@@ -94,7 +95,7 @@ func CheckToken(token string) (u *User, valid bool, err error) {
 	if Token.IsSuper(token) {
 		return &User{Username: Admin, Limit: []string{All}}, true, nil
 	}
-	username, err := Token.Get(token)
+	username, err := Token.Cache.Get(token)
 	if err != nil {
 		return nil, false, err
 	}
@@ -134,7 +135,7 @@ func Login(req *LoginReq) (string, error) {
 	}
 
 	token := g.RandString(16)
-	err = Token.Set(token, user.Username, time.Hour*24*3)
+	err = Token.Cache.Set(token, user.Username, time.Hour*24*3)
 
 	return token, err
 }
