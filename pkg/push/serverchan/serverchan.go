@@ -3,30 +3,33 @@ package serverchan
 import (
 	"errors"
 	"fmt"
-	"github.com/injoyai/conv"
 	"github.com/injoyai/goutil/net/http"
 	"github.com/injoyai/notice/pkg/push"
 	"net/url"
 	"regexp"
 	"strings"
-	"time"
 )
 
-func New(sendKey string, timeouts ...time.Duration) *ServerChan {
-	timeout := conv.DefaultDuration(0, timeouts...)
-	return &ServerChan{
+func New(sendKey string, client ...*http.Client) *ServerChan {
+	s := &ServerChan{
 		SendKey: sendKey,
 		Api:     getApi(sendKey),
-		Timeout: timeout,
-		client:  http.NewClient().SetTimeout(timeout),
+		client:  http.DefaultClient,
 	}
+	if len(client) > 0 && client[0] != nil {
+		s.client = client[0]
+	}
+	return s
 }
 
 type ServerChan struct {
 	SendKey string
 	Api     string
-	Timeout time.Duration
 	client  *http.Client
+}
+
+func (this *ServerChan) Name() string {
+	return "Server酱"
 }
 
 func (this *ServerChan) Types() []string {
@@ -43,6 +46,7 @@ func (this *ServerChan) Push(msg *push.Message) error {
 	data := url.Values{}
 	data.Set("text", msg.Title)
 	data.Set("desp", msg.Content)
+
 	return this.client.Url(this.Api).
 		SetHeader("Content-Type", "application/x-www-form-urlencoded").
 		SetBody(data.Encode()).Post().Err()

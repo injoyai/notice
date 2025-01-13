@@ -1,8 +1,6 @@
 package push
 
 const (
-	TypeAll           = "all"            //全部
-	TypeTCP           = "tcp"            //tcp前缀
 	TypeDesktopNotice = "desktop:notice" //桌面端通知
 	TypeDesktopVoice  = "desktop:voice"  //桌面端语音
 	TypeDesktopPopup  = "desktop:popup"  //桌面端弹窗

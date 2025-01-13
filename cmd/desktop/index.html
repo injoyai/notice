@@ -262,15 +262,24 @@
 
     <div id="pushBox" class="options">
         <div class="modal-content">
-            <h2>消息推送</h2>
+            <h2>消息推送</h2> 
             <select id="method" name="method" class="custom-select">
                 <option value="wechat:group">微信:群聊</option>
                 <option value="wechat:friend">微信:好友</option>
                 <option value="desktop:notice">桌面:通知</option>
                 <option value="desktop:voice">桌面:语音</option>
                 <option value="desktop:popup">桌面:弹窗</option>
+                <option value="pushplus">推送加</option>
+                <option value="serverchan">PushPlus酱</option>
+                <option value="gotify">Gotify</option>
+                <option value="dingtalk">钉钉</option>
+                <option value="telegram">Telegram</option>
+                <option value="webhook">Webhook</option>
+                <option value="plugin">插件</option>
+                <option value="script">脚本</option>
                 <option value="aliyun:sms">阿里:短信</option>
                 <option value="tencent:sms">腾讯:短信</option>
+                <option value="mail">邮件</option>
             </select>
             <input type="text" id="target" placeholder="推送目标">
             <select id="type" name="type" class="custom-select">

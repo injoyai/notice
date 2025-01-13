@@ -41,7 +41,7 @@ func Init(port int) error {
 
 		//查询用户列表
 		g.GET("/user/all", func(r *mux.Request) {
-			data, err := user.All()
+			data, err := user.GetAll()
 			in.CheckErr(err)
 			in.Succ(data)
 		})
@@ -62,5 +62,6 @@ func Init(port int) error {
 		})
 
 	})
+
 	return s.Run()
 }

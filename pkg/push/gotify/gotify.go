@@ -3,20 +3,22 @@ package gotify
 import (
 	"errors"
 	"fmt"
-	"github.com/injoyai/conv"
 	"github.com/injoyai/goutil/g"
 	"github.com/injoyai/goutil/net/http"
 	"github.com/injoyai/notice/pkg/push"
-	"time"
 )
 
-func New(host, token string, priority int, timeouts ...time.Duration) *Gotify {
-	return &Gotify{
+func New(host, token string, priority int, client ...*http.Client) *Gotify {
+	x := &Gotify{
 		Host:     host,
 		Token:    token,
 		Priority: priority,
-		client:   http.NewClient().SetTimeout(conv.DefaultDuration(0, timeouts...)),
+		client:   http.DefaultClient,
 	}
+	if len(client) > 0 && client[0] != nil {
+		x.client = client[0]
+	}
+	return x
 }
 
 type Gotify struct {
@@ -24,6 +26,10 @@ type Gotify struct {
 	Token    string
 	Priority int
 	client   *http.Client
+}
+
+func (this *Gotify) Name() string {
+	return "Gotify"
 }
 
 func (this *Gotify) Types() []string {

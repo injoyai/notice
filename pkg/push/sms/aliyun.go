@@ -10,13 +10,17 @@ type AliyunConfig = notice.AliyunConfig
 func NewAliyun(config *AliyunConfig) (*Aliyun, error) {
 	i, err := notice.NewAliyunSMS(config)
 	if err != nil {
-		return nil, err
+		return &Aliyun{Interface: i}, err
 	}
 	return &Aliyun{Interface: i}, nil
 }
 
 type Aliyun struct {
 	notice.Interface
+}
+
+func (this *Aliyun) Name() string {
+	return "阿里云短信"
 }
 
 func (this *Aliyun) Types() []string {

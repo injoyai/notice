@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/injoyai/base/g"
 	"github.com/injoyai/base/maps"
+	"github.com/injoyai/conv"
 	"github.com/injoyai/goutil/database/sqlite"
 	"github.com/injoyai/goutil/database/xorms"
 	"path/filepath"
@@ -14,6 +15,11 @@ const (
 	Admin = "admin"
 	All   = "all"
 )
+
+type IUser interface {
+	GetID() string
+	GetName() string
+}
 
 var (
 	DB    *xorms.Engine
@@ -26,7 +32,7 @@ func Init(dir string) (err error) {
 		return
 	}
 	initToken()
-	if err := DB.Sync(new(User)); err != nil {
+	if err = DB.Sync(new(User)); err != nil {
 		return err
 	}
 	data, err := GetAll()
@@ -47,19 +53,31 @@ type LoginReq struct {
 }
 
 type User struct {
-	ID       string   `json:"id" orm:"time"` //主键
-	Name     string   `json:"name"`          //名称
-	Username string   `json:"username"`      //账号
-	Password string   `json:"password"`      //密码
-	Limit    []string `json:"limit"`         //消息推送限制
+	ID       int64    `json:"id"`       //主键
+	Name     string   `json:"name"`     //名称
+	Username string   `json:"username"` //账号
+	Password string   `json:"password"` //密码
+	Limit    []string `json:"limit"`    //消息推送限制
 }
 
-func (this *User) LimitMap() map[string]struct{} {
-	m := make(map[string]struct{})
-	for _, v := range this.Limit {
-		m[v] = struct{}{}
+func (this *User) GetID() string {
+	return conv.String(this.ID)
+}
+
+func (this *User) GetName() string {
+	return this.Name
+}
+
+func (this *User) Limits(method string) bool {
+	if len(this.Limit) == 1 && this.Limit[0] == All {
+		return true
 	}
-	return m
+	for _, v := range this.Limit {
+		if v == method {
+			return true
+		}
+	}
+	return false
 }
 
 func CheckToken(token string) (*User, error) {

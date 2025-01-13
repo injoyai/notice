@@ -1,10 +1,5 @@
 package push
 
-type From struct {
-	Type     string `json:"method"`   //推送方式,tcp,http...
-	Username string `json:"username"` //用户名
-}
-
 // Message 消息格式
 type Message struct {
 	ID      string         `json:"id"`              //消息id
@@ -15,5 +10,4 @@ type Message struct {
 	Content string         `json:"content"`         //消息内容
 	Param   map[string]any `json:"param,omitempty"` //其它参数,可选
 	Time    int64          `json:"time"`            //消息时间戳,可选
-	resp    func(any any)
 }

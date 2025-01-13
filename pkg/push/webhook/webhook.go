@@ -16,6 +16,10 @@ type Webhook struct {
 	m map[string]*Config
 }
 
+func (this *Webhook) Name() string {
+	return "Webhook"
+}
+
 func (this *Webhook) Types() []string {
 	return []string{push.TypeWebhook}
 }

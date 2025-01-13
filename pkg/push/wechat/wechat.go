@@ -67,11 +67,18 @@ type Wechat struct {
 	mu      sync.RWMutex
 }
 
+func (this *Wechat) Name() string {
+	return "微信"
+}
+
 func (this *Wechat) Types() []string {
 	return []string{push.TypeWechatGroup, push.TypeWechatFriend}
 }
 
 func (this *Wechat) Push(msg *push.Message) (err error) {
+	if this.Client == nil || this.Self == nil {
+		return errors.New("初始化失败")
+	}
 
 	switch msg.Method {
 	case push.TypeWechatGroup:

@@ -2,25 +2,31 @@ package pushplus
 
 import (
 	"errors"
-	"github.com/injoyai/conv"
 	"github.com/injoyai/goutil/g"
 	"github.com/injoyai/goutil/net/http"
 	"github.com/injoyai/notice/pkg/push"
-	"time"
 )
 
-var url = "http://www.pushplus.plus/send"
+const url = "http://www.pushplus.plus/send"
 
-func New(token string, timeouts ...time.Duration) *PushPlus {
-	return &PushPlus{
+func New(token string, client ...*http.Client) *PushPlus {
+	p := &PushPlus{
 		Token:  token,
-		client: http.NewClient().SetTimeout(conv.DefaultDuration(0, timeouts...)),
+		client: http.DefaultClient,
 	}
+	if len(client) > 0 && client[0] != nil {
+		p.client = client[0]
+	}
+	return p
 }
 
 type PushPlus struct {
 	Token  string
 	client *http.Client
+}
+
+func (this *PushPlus) Name() string {
+	return "推送加"
 }
 
 func (this *PushPlus) Types() []string {

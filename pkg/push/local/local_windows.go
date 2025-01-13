@@ -23,6 +23,10 @@ func (this *Local) Types() []string {
 	}
 }
 
+func (this *Local) Name() string {
+	return "本机"
+}
+
 func (this *Local) Push(msg *push.Message) (err error) {
 	switch msg.Target {
 	case push.TypeLocalPopup:

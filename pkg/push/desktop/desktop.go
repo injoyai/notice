@@ -81,6 +81,10 @@ type Desktop struct {
 	f func(name string, msg *push.Message, Type string) error
 }
 
+func (this *Desktop) Name() string {
+	return "桌面端"
+}
+
 func (this *Desktop) Types() []string {
 	return []string{
 		push.TypeDesktopNotice,

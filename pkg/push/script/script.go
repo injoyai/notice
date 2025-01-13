@@ -21,6 +21,10 @@ type Script struct {
 	m  map[string]string
 }
 
+func (this *Script) Name() string {
+	return "脚本"
+}
+
 func (this *Script) Types() []string {
 	return []string{push.TypeScript}
 }

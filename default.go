@@ -1,12 +1,11 @@
 package notice
 
 import (
-	"errors"
 	cfg2 "github.com/injoyai/conv/cfg/v2"
 	"github.com/injoyai/conv/codec"
 	"github.com/injoyai/logs"
 	"github.com/injoyai/notice/pkg/api"
-	"github.com/injoyai/notice/pkg/middle/forbidden"
+	"github.com/injoyai/notice/pkg/middle"
 	"github.com/injoyai/notice/pkg/push"
 	"github.com/injoyai/notice/pkg/push/desktop"
 	"github.com/injoyai/notice/pkg/push/dingtalk"
@@ -19,9 +18,13 @@ import (
 	"github.com/injoyai/notice/pkg/push/sms"
 	"github.com/injoyai/notice/pkg/push/telegram"
 	"github.com/injoyai/notice/pkg/push/webhook"
-	"github.com/injoyai/notice/pkg/push/wechat"
 	"github.com/injoyai/notice/pkg/user"
 	"path/filepath"
+)
+
+const (
+	DefaultDesktopPort = 8427
+	DefaultHTTPPort    = 8428
 )
 
 func Default(dataDir string) {
@@ -29,85 +32,65 @@ func Default(dataDir string) {
 	cfg := cfg2.New(cfg2.WithFile(filepath.Join(dataDir, "/config/config.yaml"), codec.Yaml))
 
 	//加载短信
-	_sms, err := sms.NewAliyun(&sms.AliyunConfig{})
-	logs.PanicErr(err)
-
-	//加载微信通知
-	_wechat, err := wechat.New(dataDir)
-	logs.PanicErr(err)
-
-	//gotify
-	_gotify := gotify.New(
-		cfg.GetString("gotify.host"),
-		cfg.GetString("gotify.token"),
-		cfg.GetInt("gotify.priority", 0),
-	)
+	_alisms, _ := sms.NewAliyun(&sms.AliyunConfig{})
 
 	//加载桌面端通知
-	_desktop, err := desktop.New(cfg.GetInt("desktop.port", 8427))
-	logs.PanicErr(err)
-
-	//加载违禁词规则
-	f := forbidden.New(cfg.GetStrings("forbidden.words")...)
-
-	//webhook
-	_webhook := webhook.New(nil)
-
-	//pushplus
-	_pushPlus := pushplus.New(cfg.GetString("pushplus.token"))
-
-	//server酱
-	_serverChan := serverchan.New(cfg.GetString("serverchan.sendkey"))
-
-	//插件
-	_plugin := plugin.New()
-
-	//脚本
-	_script := script.New(20, nil)
-
-	//钉钉
-	_dingTalk := dingtalk.New()
+	_desktop, _ := desktop.New(cfg.GetInt("desktop.port", DefaultDesktopPort))
 
 	//telegram
-	_telegram, err := telegram.New(cfg.GetString("telegram.token"))
-
-	//本机
-	_local := local.New()
-
-	//消息中间件
-	push.Manager.Use(func(u *user.User, msg *push.Message) error {
-		//校验权限
-		limit := u.LimitMap()
-		if len(limit) > 0 {
-			if _, ok := limit[push.TypeAll]; !ok {
-				if _, ok2 := limit[msg.Method]; !ok2 {
-					return errors.New("无权限")
-				}
-			}
-		}
-		//校验违禁词
-		return f.Check(msg.Title, msg.Content)
-	})
+	_telegram, _ := telegram.New(cfg.GetString("telegram.token"))
 
 	//注册pusher
 	push.Manager.Register(
-		_sms,
-		_wechat,
-		_gotify,
+		_alisms,
 		_desktop,
-		_webhook,
-		_pushPlus,
-		_serverChan,
-		_plugin,
-		_script,
-		_dingTalk,
 		_telegram,
-		_local,
+
+		webhook.New(nil), //webhook
+
+		plugin.New(),        //插件
+		script.New(20, nil), //脚本
+		local.New(),         //本机
+
+		//pushplus
+		pushplus.New(
+			cfg.GetString("pushplus.token"),
+			NewClient(cfg.GetDuration("pushplus.timeout")),
+		),
+
+		//server酱
+		serverchan.New(
+			cfg.GetString("serverchan.sendkey"),
+			NewClient(cfg.GetDuration("serverchan.timeout")),
+		),
+
+		//gotify
+		gotify.New(
+			cfg.GetString("gotify.host"),
+			cfg.GetString("gotify.token"),
+			cfg.GetInt("gotify.priority", 0),
+			NewClient(cfg.GetDuration("gotify.timeout")),
+		),
+
+		//钉钉
+		dingtalk.New(
+			cfg.GetString("dingtalk.url"),
+			cfg.GetString("dingtalk.secret"),
+			NewClient(cfg.GetDuration("dingtalk.timeout")),
+		),
+	)
+
+	//消息中间件
+	push.Manager.Use(
+		middle.NewLog(),  //日志
+		middle.NewAuth(), //校验权限
+		middle.NewForbidden(cfg.GetStrings("forbidden.words")...), //校验违禁词
+		middle.NewQueue(10, cfg.GetDuration("queue.timeout")),     //消息队列
 	)
 
 	//加载用户
 	logs.PanicErr(user.Init(dataDir))
 
 	//加载http服务
-	api.Init(cfg.GetInt("http.port", 8426))
+	api.Init(cfg.GetInt("http.port", DefaultHTTPPort))
 }
