@@ -14,7 +14,7 @@ import (
 	"github.com/injoyai/logs"
 	"github.com/injoyai/notice/pkg/push"
 	"github.com/injoyai/notice/pkg/push/desktop"
-	"github.com/injoyai/notice/pkg/user"
+	user "github.com/injoyai/notice/pkg/user/default"
 	"github.com/injoyai/notice/pkg/util"
 	"net"
 	"time"

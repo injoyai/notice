@@ -5,32 +5,36 @@ import (
 	"github.com/injoyai/base/g"
 	"github.com/injoyai/base/maps"
 	"github.com/injoyai/conv"
+	"github.com/injoyai/goutil/database/mysql"
 	"github.com/injoyai/goutil/database/sqlite"
 	"github.com/injoyai/goutil/database/xorms"
-	"path/filepath"
 	"time"
 )
 
 const (
-	Admin = "admin"
-	All   = "all"
+	Admin    = "admin"
+	All      = "all"
+	Filename = "database/user.db"
 )
-
-type IUser interface {
-	GetID() string
-	GetName() string
-}
 
 var (
 	DB    *xorms.Engine
 	Cache = maps.NewSafe()
 )
 
-func Init(dir string) (err error) {
-	DB, err = sqlite.NewXorm(filepath.Join(dir, "database/user.db"))
+func Init(conf *Config) (err error) {
+	switch conf.Type {
+	case "sqlite":
+		DB, err = sqlite.NewXorm(conf.DSN)
+	case "mysql":
+		DB, err = mysql.NewXorm(conf.DSN)
+	default:
+		return errors.New("未知类型: " + conf.Type)
+	}
 	if err != nil {
 		return
 	}
+
 	initToken()
 	if err = DB.Sync(new(User)); err != nil {
 		return err
@@ -38,6 +42,12 @@ func Init(dir string) (err error) {
 	data, err := GetAll()
 	if err != nil {
 		return err
+	}
+	if len(data) == 0 {
+		_, err = DB.Insert(&User{Username: "admin", Password: "admin", Limit: []string{All}})
+		if err != nil {
+			return err
+		}
 	}
 	for _, v := range data {
 		Cache.Set(v.Username, v)
@@ -80,25 +90,25 @@ func (this *User) Limits(method string) bool {
 	return false
 }
 
-func CheckToken(token string) (*User, error) {
+func CheckToken(token string) (u *User, valid bool, err error) {
 	if Token.IsSuper(token) {
-		return &User{Username: Admin, Limit: []string{All}}, nil
+		return &User{Username: Admin, Limit: []string{All}}, true, nil
 	}
 	username, err := Token.Get(token)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	if len(username) == 0 {
-		return nil, errors.New("token无效")
+		return nil, false, nil
 	}
-	u, err := GetByCache(username)
+	u, err = GetByCache(username)
 	if err != nil {
 		if err.Error() == "用户不存在" {
-			return nil, errors.New("token无效")
+			return nil, false, nil
 		}
-		return nil, err
+		return nil, false, err
 	}
-	return u, nil
+	return u, true, nil
 }
 
 func GetByCache(username string) (*User, error) {

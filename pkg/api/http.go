@@ -4,7 +4,7 @@ import (
 	"github.com/injoyai/goutil/frame/in/v3"
 	"github.com/injoyai/goutil/frame/mux"
 	"github.com/injoyai/notice/pkg/push"
-	"github.com/injoyai/notice/pkg/user"
+	user "github.com/injoyai/notice/pkg/user/default"
 )
 
 func Init(port int) error {
@@ -15,8 +15,11 @@ func Init(port int) error {
 		//校验权限
 		g.Middle(func(r *mux.Request) {
 			token := r.GetHeader("Authorization")
-			u, err := user.CheckToken(token)
+			u, valid, err := user.CheckToken(token)
 			in.CheckErr(err)
+			if !valid {
+				in.DefaultClient.Forbidden()
+			}
 			r.SetCache("user", u)
 		})
 

@@ -6,7 +6,7 @@ import (
 	"github.com/injoyai/base/maps"
 	"github.com/injoyai/conv"
 	"github.com/injoyai/conv/cfg"
-	"github.com/injoyai/goutil/database/redis"
+	"github.com/redis/go-redis/v9"
 	"time"
 )
 
@@ -27,20 +27,17 @@ func Signal(username, password string, timestamp time.Time) string {
 }
 
 type Config struct {
-	Signal func(username, password string, timestamp time.Time) string
+	Signal func(username, password string, timestamp time.Time) string //签名算法
+	Type   string                                                      //数据库类型
+	DSN    string                                                      //数据库配置
+	Auth   AuthConfig                                                  //鉴权配置
 }
 
 type AuthConfig struct {
-	Enable bool   //启用
-	Type   string //类型,redis,memory,db 等方式
-	Redis  struct {
-		Address  string
-		Password string
-		DB       int
-	}
-	Memory struct {
-		Expire time.Duration
-	}
+	Enable     bool           //启用
+	Type       string         //类型,redis,memory,db 等方式
+	Redis      *redis.Options //redis配置
+	SuperToken []string       //超级token
 }
 
 var Token *tokenCache

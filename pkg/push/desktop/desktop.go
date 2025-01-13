@@ -10,7 +10,7 @@ import (
 	"github.com/injoyai/ios/server/listen"
 	"github.com/injoyai/logs"
 	"github.com/injoyai/notice/pkg/push"
-	"github.com/injoyai/notice/pkg/user"
+	user "github.com/injoyai/notice/pkg/user/default"
 	"time"
 )
 

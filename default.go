@@ -18,13 +18,13 @@ import (
 	"github.com/injoyai/notice/pkg/push/sms"
 	"github.com/injoyai/notice/pkg/push/telegram"
 	"github.com/injoyai/notice/pkg/push/webhook"
-	"github.com/injoyai/notice/pkg/user"
+	user "github.com/injoyai/notice/pkg/user/default"
 	"path/filepath"
 )
 
 const (
 	DefaultDesktopPort = 8427
-	DefaultHTTPPort    = 8428
+	DefaultHTTPPort    = 8426
 )
 
 func Default(dataDir string) {
@@ -46,8 +46,7 @@ func Default(dataDir string) {
 		_desktop,
 		_telegram,
 
-		webhook.New(nil), //webhook
-
+		webhook.New(nil),    //webhook
 		plugin.New(),        //插件
 		script.New(20, nil), //脚本
 		local.New(),         //本机
