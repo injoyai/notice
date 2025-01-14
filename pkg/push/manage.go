@@ -1,19 +1,17 @@
 package push
 
 import (
-	"errors"
+	"fmt"
 	"github.com/injoyai/base/g"
 )
 
 var Manager = NewManage()
 
 func NewManage() *Manage {
-	m := &Manage{
+	return &Manage{
 		pusher: map[string][]Pusher{},
 		middle: []Middle{},
 	}
-	m.Use(m)
-	return m
 }
 
 type Manage struct {
@@ -21,7 +19,7 @@ type Manage struct {
 	middle []Middle
 }
 
-// Use 中间件
+// Use 中间件,越后面添加的越先执行,类似洋葱,一层层包起来
 func (this *Manage) Use(i ...Middle) *Manage {
 	this.middle = append(this.middle, i...)
 	return this
@@ -37,19 +35,16 @@ func (this *Manage) Register(i ...Pusher) *Manage {
 	return this
 }
 
-// Handler 实现中间件接口,校验推送方式是否存在
-func (this *Manage) Handler(u User, msg *Message, f func() error) error {
-	_, ok := this.pusher[msg.Method]
-	if !ok {
-		return errors.New("推送方式不存在")
-	}
-	return f()
-}
-
 // Push 推送消息
 func (this *Manage) Push(u User, msg *Message) (err error) {
 	defer g.Recover(&err)
-	for _, p := range this.pusher[msg.Method] {
+
+	pushs, ok := this.pusher[msg.Method]
+	if !ok {
+		return fmt.Errorf("推送方式[%s]未注册", msg.Method)
+	}
+
+	for _, p := range pushs {
 		if p == nil {
 			continue
 		}

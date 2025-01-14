@@ -12,9 +12,9 @@ import (
 消息队列中间件
 */
 
-func NewQueue(limit int, timeout time.Duration) *Queue {
+func NewQueue(limit, _cap int, timeout time.Duration) *Queue {
 	q := &Queue{
-		c:    make(chan func() error, limit*2),
+		c:    make(chan func() error, _cap),
 		wait: wait.New(timeout),
 	}
 

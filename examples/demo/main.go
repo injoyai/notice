@@ -6,5 +6,7 @@ import (
 )
 
 func main() {
-	notice.Default(oss.UserInjoyDir("notice/server/"))
+	dir := oss.UserInjoyDir("notice/server/")
+	dir = "./"
+	notice.Default(dir)
 }

@@ -27,6 +27,7 @@ func main() {
 		tray.WithShow(func(m *tray.Menu) { ui() }),
 		tray.WithStartup(),
 		tray.WithExit(),
+		tray.WithIco(Ico),
 	)
 }
 

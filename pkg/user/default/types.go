@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type Cache2 interface {
+type Cache interface {
 	Get(key string) (string, error)
 	Set(key, vale string, expiration time.Duration) error
 	Del(key string) error

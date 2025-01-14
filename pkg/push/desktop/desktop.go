@@ -14,7 +14,11 @@ import (
 	"time"
 )
 
-func New(port int) (*Desktop, error) {
+func New(port int, enable ...bool) (*Desktop, error) {
+	if len(enable) == 0 || !enable[0] {
+		return &Desktop{}, nil
+	}
+
 	s, err := listen.TCP(port, func(s *server.Server) {
 
 		//客户端连接事件
@@ -94,6 +98,9 @@ func (this *Desktop) Types() []string {
 }
 
 func (this *Desktop) Push(msg *push.Message) (err error) {
+	if this.Server == nil || this.f == nil {
+		return errors.New("桌面端未初始化")
+	}
 
 	switch msg.Method {
 	case push.TypeDesktopNotice:

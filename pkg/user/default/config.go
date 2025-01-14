@@ -3,6 +3,7 @@ package user
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"github.com/injoyai/base/maps"
 	"github.com/injoyai/conv"
 	"github.com/redis/go-redis/v9"
 	"time"
@@ -17,10 +18,9 @@ func Signal(username, password string, timestamp time.Time) string {
 }
 
 type Config struct {
-	Signal func(username, password string, timestamp time.Time) string //签名算法
-	Type   string                                                      //数据库类型
-	DSN    string                                                      //数据库配置
-	Auth   AuthConfig                                                  //鉴权配置
+	Type string     //数据库类型
+	DSN  string     //数据库配置
+	Auth AuthConfig //鉴权配置
 }
 
 type AuthConfig struct {
@@ -28,4 +28,46 @@ type AuthConfig struct {
 	Type       string         //类型,redis,memory,db 等方式
 	Redis      *redis.Options //redis配置
 	SuperToken []string       //超级token
+}
+
+func initToken(cfg *Config) *auth {
+	if cfg == nil {
+		cfg = &Config{}
+	}
+	m := &auth{
+		Enable: cfg.Auth.Enable,
+		Cache: func() Cache {
+			switch cfg.Auth.Type {
+			case Redis:
+				return &_redis{
+					Client: redis.NewClient(cfg.Auth.Redis),
+				}
+			default:
+				return &_memory{
+					Safe: maps.NewSafe(),
+				}
+			}
+		}(),
+		SuperTokens: cfg.Auth.SuperToken,
+	}
+	return m
+}
+
+type auth struct {
+	Enable      bool
+	Cache       Cache
+	SuperTokens []string
+}
+
+// IsSuper 超级token，可以免校验
+func (this *auth) IsSuper(token string) bool {
+	if !this.Enable {
+		return true
+	}
+	for _, v := range this.SuperTokens {
+		if token == v {
+			return true
+		}
+	}
+	return false
 }

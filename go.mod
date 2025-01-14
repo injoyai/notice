@@ -4,8 +4,6 @@ go 1.20
 
 require (
 	github.com/eatmoreapple/openwechat v1.4.8
-	github.com/getlantern/systray v1.2.2
-	github.com/go-ole/go-ole v1.2.6
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
 	github.com/injoyai/base v1.0.19
 	github.com/injoyai/conv v1.1.10
@@ -13,6 +11,7 @@ require (
 	github.com/injoyai/ios v0.0.3
 	github.com/injoyai/logs v1.0.9
 	github.com/injoyai/lorca v0.0.0-20230816093842-66a8b4247238
+	github.com/redis/go-redis/v9 v9.5.1
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/telebot.v4 v4.0.0-beta.4
@@ -36,7 +35,10 @@ require (
 	github.com/getlantern/hex v0.0.0-20190417191902-c6586a6fe0b7 // indirect
 	github.com/getlantern/hidden v0.0.0-20190325191715-f02dbb02be55 // indirect
 	github.com/getlantern/ops v0.0.0-20190325191751-d70cb0d6f85f // indirect
+	github.com/getlantern/systray v1.2.2 // indirect
 	github.com/glebarez/go-sqlite v1.21.1 // indirect
+	github.com/go-ole/go-ole v1.2.6 // indirect
+	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/goburrow/serial v0.1.0 // indirect
 	github.com/goccy/go-json v0.8.1 // indirect
@@ -67,7 +69,6 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.26.0 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
-	github.com/redis/go-redis/v9 v9.5.1 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/robertkrimen/otto v0.2.1 // indirect
 	github.com/satori/go.uuid v1.2.0 // indirect

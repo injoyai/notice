@@ -12,21 +12,27 @@ import (
 )
 
 const (
-	Admin    = "admin"
-	All      = "all"
-	Filename = "database/user.db"
+	DefaultUsername = "admin"            //默认管理员账号
+	DefaultPassword = "admin"            //默认管理员密码
+	All             = "all"              //所有权限
+	Sqlite          = "sqlite"           //sqlite数据库
+	Mysql           = "mysql"            //mysql数据库
+	Redis           = "redis"            //redis缓存
+	Memory          = "memory"           //内存缓存
+	Filename        = "database/user.db" //
 )
 
 var (
 	DB    *xorms.Engine
-	Cache = maps.NewSafe()
+	Users = maps.NewSafe()
+	Auth  *auth
 )
 
 func Init(conf *Config) (err error) {
 	switch conf.Type {
-	case "sqlite":
+	case Sqlite:
 		DB, err = sqlite.NewXorm(conf.DSN)
-	case "mysql":
+	case Mysql:
 		DB, err = mysql.NewXorm(conf.DSN)
 	default:
 		return errors.New("未知类型: " + conf.Type)
@@ -35,7 +41,7 @@ func Init(conf *Config) (err error) {
 		return
 	}
 
-	Token = NewManage(conf)
+	Auth = initToken(conf)
 
 	if err = DB.Sync(new(User)); err != nil {
 		return err
@@ -45,13 +51,13 @@ func Init(conf *Config) (err error) {
 		return err
 	}
 	if len(data) == 0 {
-		_, err = DB.Insert(&User{Username: "admin", Password: "admin", Limit: []string{All}})
+		_, err = DB.Insert(&User{Username: DefaultUsername, Password: DefaultPassword, Limit: []string{All}})
 		if err != nil {
 			return err
 		}
 	}
 	for _, v := range data {
-		Cache.Set(v.Username, v)
+		Users.Set(v.Username, v)
 	}
 	return nil
 }
@@ -92,10 +98,10 @@ func (this *User) Limits(method string) bool {
 }
 
 func CheckToken(token string) (u *User, valid bool, err error) {
-	if Token.IsSuper(token) {
-		return &User{Username: Admin, Limit: []string{All}}, true, nil
+	if Auth.IsSuper(token) {
+		return &User{Username: DefaultUsername, Limit: []string{All}}, true, nil
 	}
-	username, err := Token.Cache.Get(token)
+	username, err := Auth.Cache.Get(token)
 	if err != nil {
 		return nil, false, err
 	}
@@ -113,7 +119,7 @@ func CheckToken(token string) (u *User, valid bool, err error) {
 }
 
 func GetByCache(username string) (*User, error) {
-	val, ok := Cache.Get(username)
+	val, ok := Users.Get(username)
 	if !ok {
 		return nil, errors.New("用户不存在")
 	}
@@ -135,7 +141,7 @@ func Login(req *LoginReq) (string, error) {
 	}
 
 	token := g.RandString(16)
-	err = Token.Cache.Set(token, user.Username, time.Hour*24*3)
+	err = Auth.Cache.Set(token, user.Username, time.Hour*24*3)
 
 	return token, err
 }
@@ -160,13 +166,13 @@ func Create(user *User) error {
 	if u == nil {
 		_, err = DB.Insert(user)
 		if err == nil {
-			Cache.Set(user.Username, user)
+			Users.Set(user.Username, user)
 		}
 		return err
 	}
 	_, err = DB.Where("Username=?", user.Username).Update(user)
 	if err == nil {
-		Cache.Set(user.Username, user)
+		Users.Set(user.Username, user)
 	}
 	return err
 }
@@ -174,7 +180,7 @@ func Create(user *User) error {
 func Del(username string) error {
 	_, err := DB.Where("Username=?", username).Delete(&User{})
 	if err == nil {
-		Cache.Del(username)
+		Users.Del(username)
 	}
 	return err
 }
