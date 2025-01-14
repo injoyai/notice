@@ -270,7 +270,7 @@
                 <option value="desktop:voice">桌面:语音</option>
                 <option value="desktop:popup">桌面:弹窗</option>
                 <option value="pushplus">推送加</option>
-                <option value="serverchan">PushPlus酱</option>
+                <option value="serverchan">Server酱</option>
                 <option value="gotify">Gotify</option>
                 <option value="dingtalk">钉钉</option>
                 <option value="telegram">Telegram</option>
@@ -289,7 +289,8 @@
                 <option value="audio">语音</option>
                 <option value="video">视频</option>
             </select>
-            <input type="text" id="content2" placeholder="消息内容">
+            <input type="text" id="_title" placeholder="标题">
+            <input type="text" id="_content" placeholder="消息内容">
             <button id="pushBoxClick">推送</button>
             <button id="pushBoxClose" style="background-color: rgb(252,16,53)">断开</button>
         </div>
@@ -328,16 +329,13 @@
         const method = document.getElementById('method').value;
         const target = document.getElementById('target').value;
         const type = document.getElementById('type').value;
-        const content = document.getElementById('content2').value;
-        if (target === '') {
-            noticeErr("推送目标不能为空")
-            return
-        }
+        const title = document.getElementById('_title').value;
+        const content = document.getElementById('_content').value;
         if (content === '') {
             noticeErr("消息内容不能为空")
             return
         }
-        fnPush(method, target, type, content)
+        fnPush(method, target, type,title, content)
     }
     const pushBoxClose = document.getElementById('pushBoxClose')
     pushBoxClose.onclick = () => {
@@ -354,7 +352,7 @@
     function pushAfter(err) {
         pushBoxClick.disabled = false
         pushBoxClick.innerHTML = '推送'
-        document.getElementById('content2').value=''
+        document.getElementById('_content').value=''
         if (err === '') {
             notice('成功')
         } else {
@@ -386,11 +384,12 @@
     }
 
     //显示推送界面
-    function showPush(show, method, target, type, content) {
+    function showPush(show, method, target, type,title, content) {
         document.getElementById('method').value = method
         document.getElementById('target').value = target
         document.getElementById('type').value = type
-        document.getElementById('content2').value = content
+        document.getElementById('_title').value = title
+        document.getElementById('_content').value = content
         loginBox.style.display = show ? "none" : "block";
         pushBox.style.display = show ? "block" : "none";
     }

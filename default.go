@@ -73,14 +73,14 @@ func Default(dataDir string) {
 
 		//pushplus
 		pushplus.New(
-			cfg.GetString("pushplus.token"),
-			NewClient(cfg.GetDuration("pushplus.timeout")),
+			cfg.GetString("pushPlus.token"),
+			NewClient(cfg.GetDuration("pushPlus.timeout")),
 		),
 
 		//server酱
 		serverchan.New(
-			cfg.GetString("serverchan.sendkey"),
-			NewClient(cfg.GetDuration("serverchan.timeout")),
+			cfg.GetString("serverChan.sendKey"),
+			NewClient(cfg.GetDuration("serverChan.timeout")),
 		),
 
 		//gotify

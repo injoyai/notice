@@ -26,7 +26,7 @@ func NewTCP() *tcp {
 	t := &tcp{
 		Rerun: util.NewRerun(),
 		Cache: cache.NewFile(oss.UserInjoyDir("notice/cache/user")),
-		wait:  wait.New(time.Second * 2),
+		wait:  wait.New(time.Second * 10),
 	}
 	return t
 }

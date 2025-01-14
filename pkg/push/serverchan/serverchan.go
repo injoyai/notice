@@ -47,9 +47,19 @@ func (this *ServerChan) Push(msg *push.Message) error {
 	data.Set("text", msg.Title)
 	data.Set("desp", msg.Content)
 
-	return this.client.Url(this.Api).
+	resp := this.client.Url(this.Api).
 		SetHeader("Content-Type", "application/x-www-form-urlencoded").
-		SetBody(data.Encode()).Post().Err()
+		SetBody(data.Encode()).Post()
+	if resp.Err() != nil {
+		return resp.Err()
+	}
+
+	m := resp.GetBodyDMap()
+	if m.GetInt("code") != 0 {
+		return errors.New(m.GetString("error"))
+	}
+
+	return nil
 }
 
 func getApi(sendKey string) string {

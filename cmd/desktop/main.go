@@ -24,25 +24,27 @@ var (
 func main() {
 	go TCP.Rerun.Run(TCP)
 	tray.Run(
-		tray.WithShow(func(m *tray.Menu) { ui() }),
+		tray.WithShow(func(m *tray.Menu) { ui() }, tray.Icon(IcoShow)),
 		tray.WithStartup(),
 		tray.WithExit(),
 		tray.WithIco(Ico),
+		tray.WithHint("消息通知"),
 	)
 }
 
 func ui() {
 	lorca.Run(&lorca.Config{
 		Width:  480,
-		Height: 430,
+		Height: 500,
 		Html:   html,
 	}, func(app lorca.APP) error {
 
 		TCP.onLogin = func() {
-			app.Eval(fmt.Sprintf("showPush(true,'%s','%s','%s','%s')",
+			app.Eval(fmt.Sprintf("showPush(true,'%s','%s','%s','%s','%s')",
 				Push.GetString("method"),
 				Push.GetString("target"),
 				Push.GetString("type"),
+				Push.GetString("title"),
 				Push.GetString("content"),
 			))
 		}
@@ -56,10 +58,11 @@ func ui() {
 
 		app.Bind("init", func() {
 			if TCP.login {
-				app.Eval(fmt.Sprintf("showPush(true,'%s','%s','%s','%s')",
+				app.Eval(fmt.Sprintf("showPush(true,'%s','%s','%s','%s','%s')",
 					Push.GetString("method"),
 					Push.GetString("target"),
 					Push.GetString("type"),
+					Push.GetString("title"),
 					Push.GetString("content"),
 				))
 			} else {
@@ -76,19 +79,21 @@ func ui() {
 			err := TCP.Update(address, username, password)
 			app.Eval(fmt.Sprintf("loginAfter('%v')", conv.String(err)))
 			if err == nil {
-				app.Eval(fmt.Sprintf("showPush(true,'%s','%s','%s','%s')",
+				app.Eval(fmt.Sprintf("showPush(true,'%s','%s','%s','%s','%s')",
 					Push.GetString("method"),
 					Push.GetString("target"),
 					Push.GetString("type"),
+					"",
 					"", //Push.GetString("content"),
 				))
 			}
 		})
 
-		app.Bind("fnPush", func(method, target, Type, content string) {
+		app.Bind("fnPush", func(method, target, Type, title, content string) {
 			Push.Set("method", method)
 			Push.Set("target", target)
 			Push.Set("type", Type)
+			Push.Set("title", title)
 			Push.Set("content", content)
 			Push.Save()
 
@@ -98,6 +103,7 @@ func ui() {
 				ID:      id,
 				Method:  method,
 				Type:    Type,
+				Title:   title,
 				Content: content,
 				Time:    time.Now().Unix(),
 			})
