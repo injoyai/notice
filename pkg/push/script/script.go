@@ -2,6 +2,7 @@ package script
 
 import (
 	"errors"
+	"github.com/injoyai/goutil/script"
 	"github.com/injoyai/goutil/script/js"
 	"github.com/injoyai/notice/pkg/push"
 )
@@ -34,6 +35,9 @@ func (this *Script) Push(msg *push.Message) error {
 	if !ok {
 		return errors.New("脚本不存在: " + msg.Target)
 	}
-	_, err := this.js.Exec(s)
+	_, err := this.js.Exec(s, func(i script.Client) {
+		i.Set("title", msg.Title)
+		i.Set("content", msg.Content)
+	})
 	return err
 }

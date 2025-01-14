@@ -3,6 +3,9 @@ package push
 import (
 	"fmt"
 	"github.com/injoyai/base/g"
+	"github.com/injoyai/conv"
+	"io"
+	"net/http"
 )
 
 var Manager = NewManage()
@@ -17,6 +20,17 @@ func NewManage() *Manage {
 type Manage struct {
 	pusher map[string][]Pusher
 	middle []Middle
+}
+
+func (this *Manage) Handler(r *http.Request, u User) error {
+	defer r.Body.Close()
+	bs, _ := io.ReadAll(r.Body)
+	msg := &Message{}
+	err := conv.Unmarshal(bs, msg)
+	if err != nil {
+		return err
+	}
+	return this.Push(u, msg)
 }
 
 // Use 中间件,越后面添加的越先执行,类似洋葱,一层层包起来

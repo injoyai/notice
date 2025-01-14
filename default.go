@@ -34,6 +34,8 @@ func Default(dataDir string) {
 
 	cfg := cfg2.New(cfg2.WithFile(filepath.Join(dataDir, "/config/config_real.yaml"), codec.Yaml))
 
+	//_wechat, _ := wechat.New(dataDir)
+
 	//加载短信
 	_alisms, _ := sms.NewAliyun(&sms.AliyunConfig{})
 
@@ -101,6 +103,7 @@ func Default(dataDir string) {
 
 	//消息中间件
 	push.Manager.Use(
+		middle.NewRetry(cfg.GetInt("middle.retry")), //重试
 		//消息队列
 		middle.NewQueue(
 			cfg.GetInt("middle.queue.limit", 10),
@@ -129,5 +132,6 @@ func Default(dataDir string) {
 	}))
 
 	//加载http服务
-	api.Init(cfg.GetInt("http.port", DefaultHTTPPort))
+	err := api.Run(cfg.GetInt("http.port", DefaultHTTPPort))
+	logs.Err(err)
 }

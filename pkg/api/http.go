@@ -7,7 +7,7 @@ import (
 	user "github.com/injoyai/notice/pkg/user/default"
 )
 
-func Init(port int) error {
+func Run(port int) error {
 
 	s := mux.New().SetPort(port)
 	s.Group("/api", func(g *mux.Grouper) {

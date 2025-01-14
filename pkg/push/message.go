@@ -11,3 +11,31 @@ type Message struct {
 	Param   map[string]any `json:"param,omitempty"`  //其它参数,可选
 	Time    int64          `json:"time,omitempty"`   //消息时间戳,可选
 }
+
+/*
+
+
+
+ */
+
+func NewUser(name string) User {
+	return &_user{
+		name: name,
+	}
+}
+
+type _user struct {
+	name string
+}
+
+func (this *_user) GetID() string {
+	return ""
+}
+
+func (this *_user) GetName() string {
+	return this.name
+}
+
+func (this *_user) Limits(method string) bool {
+	return true
+}
