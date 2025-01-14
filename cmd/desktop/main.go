@@ -10,6 +10,7 @@ import (
 	"github.com/injoyai/goutil/oss/tray"
 	"github.com/injoyai/lorca"
 	"github.com/injoyai/notice/pkg/push"
+	"path/filepath"
 	"time"
 )
 
@@ -17,8 +18,9 @@ import (
 var html string
 
 var (
-	TCP  = NewTCP()
-	Push = cache.NewFile(oss.UserInjoyDir("notice/cache/push"))
+	dir  = oss.UserInjoyDir("notice/desktop/")
+	TCP  = NewTCP(filepath.Join(dir, "login"), time.Second*10)
+	Push = cache.NewFile(filepath.Join(dir, "push"))
 )
 
 func main() {
@@ -35,7 +37,7 @@ func main() {
 func ui() {
 	lorca.Run(&lorca.Config{
 		Width:  480,
-		Height: 500,
+		Height: 490,
 		Html:   html,
 	}, func(app lorca.APP) error {
 
@@ -83,8 +85,8 @@ func ui() {
 					Push.GetString("method"),
 					Push.GetString("target"),
 					Push.GetString("type"),
-					"",
-					"", //Push.GetString("content"),
+					Push.GetString("title"),
+					Push.GetString("content"),
 				))
 			}
 		})
@@ -102,6 +104,7 @@ func ui() {
 			err := TCP.WriteAny(push.Message{
 				ID:      id,
 				Method:  method,
+				Target:  target,
 				Type:    Type,
 				Title:   title,
 				Content: content,

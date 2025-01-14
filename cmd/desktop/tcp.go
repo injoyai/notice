@@ -8,7 +8,6 @@ import (
 	"github.com/injoyai/base/safe"
 	"github.com/injoyai/goutil/cache"
 	"github.com/injoyai/goutil/notice"
-	"github.com/injoyai/goutil/oss"
 	"github.com/injoyai/ios"
 	"github.com/injoyai/ios/client"
 	"github.com/injoyai/logs"
@@ -22,11 +21,11 @@ import (
 
 var _ safe.Dialer = (*tcp)(nil)
 
-func NewTCP() *tcp {
+func NewTCP(filename string, timeout time.Duration) *tcp {
 	t := &tcp{
 		Rerun: util.NewRerun(),
-		Cache: cache.NewFile(oss.UserInjoyDir("notice/cache/user")),
-		wait:  wait.New(time.Second * 10),
+		Cache: cache.NewFile(filename),
+		wait:  wait.New(timeout),
 	}
 	return t
 }
