@@ -14,7 +14,7 @@ ADD ./notice   $WORKDIR/notice
 RUN chmod +x $WORKDIR/notice
 
 # 添加I18N多语言文件、静态文件、配置文件、模板文件
-ADD config   $WORKDIR/config
+ADD ../../config   $WORKDIR/config
 
 ###############################################################################
 #                                   START
