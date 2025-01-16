@@ -38,7 +38,7 @@ func Run(port int) error {
 			msg := &push.Message{}
 			r.Parse(msg)
 			//加入发送队列
-			err := push.Manager.Push(u, msg)
+			err := push.Manager.Push(msg, u)
 			in.Err(err)
 		})
 

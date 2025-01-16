@@ -38,7 +38,7 @@ type Queue struct {
 	wait *wait.Entity
 }
 
-func (this *Queue) Handler(u push.User, msg *push.Message, f func() error) error {
+func (this *Queue) Handler(msg *push.Message, u push.User, f func() error) error {
 	select {
 	case this.c <- f:
 		_, err := this.wait.Wait(fmt.Sprintf("%p", f))

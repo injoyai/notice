@@ -16,8 +16,8 @@ type Auth struct {
 	enable bool
 }
 
-func (this *Auth) Handler(u push.User, msg *push.Message, next func() error) error {
-	if !u.Limits(msg.Method) {
+func (this *Auth) Handler(msg *push.Message, u push.User, next func() error) error {
+	if u == nil || !u.Limits(msg.Method) {
 		return fmt.Errorf("没有该推送权限")
 	}
 	return next()

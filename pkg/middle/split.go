@@ -18,7 +18,7 @@ type Split struct {
 	Sep string
 }
 
-func (this *Split) Handler(u push.User, msg *push.Message, next func() error) error {
+func (this *Split) Handler(msg *push.Message, u push.User, next func() error) error {
 	method := strings.Split(msg.Method, this.Sep)
 	for _, v := range method {
 		msg.Method = v

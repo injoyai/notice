@@ -135,7 +135,7 @@ func dealMessage(c *client.Client, msg ios.Acker) {
 		return
 	}
 
-	err = push.Manager.Push(u, data)
+	err = push.Manager.Push(data, u)
 
 	c.WriteAny(Resp{
 		ID:      data.ID,

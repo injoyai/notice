@@ -19,10 +19,14 @@ type Log struct {
 	*logs.Entity
 }
 
-func (this *Log) Handler(u push.User, msg *push.Message, next func() error) (err error) {
+func (this *Log) Handler(msg *push.Message, u push.User, next func() error) (err error) {
 	defer func() {
 		if this.enable {
-			this.Printf("用户[%s] 方式[%s] 消息[%s] 结果: %s\n", u.GetName(), msg.Method, msg.Content, conv.New(err).String("成功"))
+			if u == nil {
+				this.Printf("方式[%s] 消息[%s] 结果: %s\n", msg.Method, msg.Content, conv.New(err).String("成功"))
+			} else {
+				this.Printf("用户[%s] 方式[%s] 消息[%s] 结果: %s\n", u.GetName(), msg.Method, msg.Content, conv.New(err).String("成功"))
+			}
 		}
 	}()
 	return next()

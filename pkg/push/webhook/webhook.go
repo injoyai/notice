@@ -3,17 +3,21 @@ package webhook
 import (
 	"errors"
 	"github.com/injoyai/goutil/net/http"
+	"github.com/injoyai/goutil/script/js"
 	"github.com/injoyai/notice/pkg/push"
 	"strings"
-	"time"
 )
 
 func New(m map[string]*Config) *Webhook {
-	return &Webhook{m: m}
+	return &Webhook{
+		m:  m,
+		js: js.New(),
+	}
 }
 
 type Webhook struct {
-	m map[string]*Config
+	m  map[string]*Config
+	js *js.Client
 }
 
 func (this *Webhook) Name() string {
@@ -29,40 +33,49 @@ func (this *Webhook) Push(msg *push.Message) error {
 	if !ok {
 		return errors.New("webhook不存在: " + msg.Target)
 	}
-	s := strings.ReplaceAll(w.Body, "{title}", msg.Title)
-	s = strings.ReplaceAll(s, "{content}", msg.Content)
+	s := strings.ReplaceAll(w.Body, "${title}", msg.Title)
+	s = strings.ReplaceAll(s, "${content}", msg.Content)
 
-	_, err := w.do()
+	//if after, ok := strings.CutPrefix(s, "//js"); ok {
+	//	result, err := this.js.Exec(after, func(client script.Client) {
+	//		client.Set("title", msg.Title)
+	//		client.Set("content", msg.Content)
+	//		client.Set("method", msg.Method)
+	//		client.Set("type", msg.Type)
+	//		client.Set("target", msg.Target)
+	//		client.Set("time", msg.Time)
+	//	})
+	//	if err != nil {
+	//		return err
+	//	}
+	//	s = conv.String(result)
+	//}
+
+	_, err := w.do(s)
 	return err
 }
 
 type Config struct {
-	Url     string            //
-	Method  string            //
-	Header  map[string]string //
-	Body    string            //内容 {"title":{title},"content":{content}}
-	Timeout time.Duration     //超时时间
-	Proxy   string            //代理
-	Retry   uint              //重试次数
-	client  *http.Client
+	Url    string            //
+	Method string            //
+	Header map[string]string //
+	Body   string            //内容 {"title":${title},"content":${content}}
+	Retry  uint              //重试次数
+	Client *http.Client      //
 }
 
-func (this Config) do() (string, error) {
-	if this.client == nil {
-		this.client = http.NewClient()
+func (this Config) do(content string) (string, error) {
+	if this.Client == nil {
+		this.Client = http.NewClient()
 	}
-	if this.Timeout > 0 {
-		this.client.SetTimeout(this.Timeout)
+	if len(this.Method) == 0 {
+		this.Method = http.MethodPost
 	}
-	if this.Proxy != "" {
-		this.client.SetProxy(this.Proxy)
-	}
-
-	x := this.client.Url(this.Url)
+	x := this.Client.Url(this.Url)
 	for k, v := range this.Header {
 		x.SetHeader(k, v)
 	}
-	resp := x.SetBody(this.Body).Retry(this.Retry).SetMethod(this.Method).Do()
+	resp := x.SetBody(content).Retry(this.Retry).SetMethod(this.Method).Do()
 	if resp.Err() != nil {
 		return "", resp.Err()
 	}

@@ -10,7 +10,7 @@ type Retry struct {
 	Count int
 }
 
-func (this *Retry) Handler(u push.User, msg *push.Message, next func() error) (err error) {
+func (this *Retry) Handler(msg *push.Message, u push.User, next func() error) (err error) {
 	err = next()
 	for i := 0; err != nil && i < this.Count; i++ {
 		err = next()

@@ -30,7 +30,7 @@ func (this *Manage) Handler(r *http.Request, u User) error {
 	if err != nil {
 		return err
 	}
-	return this.Push(u, msg)
+	return this.Push(msg, u)
 }
 
 // Use 中间件,越后面添加的越先执行,类似洋葱,一层层包起来
@@ -50,7 +50,7 @@ func (this *Manage) Register(i ...Pusher) *Manage {
 }
 
 // Push 推送消息
-func (this *Manage) Push(u User, msg *Message) (err error) {
+func (this *Manage) Push(msg *Message, u User) (err error) {
 	defer g.Recover(&err)
 
 	pushs, ok := this.pusher[msg.Method]
@@ -62,8 +62,8 @@ func (this *Manage) Push(u User, msg *Message) (err error) {
 		if p == nil {
 			continue
 		}
-		h := func(u User, msg *Message) error { return p.Push(msg) }
-		err := this.doMiddle(h, 0)(u, msg)
+		h := func(msg *Message, u User) error { return p.Push(msg) }
+		err := this.doMiddle(h, 0)(msg, u)
 		if err != nil {
 			return err
 		}
@@ -73,17 +73,17 @@ func (this *Manage) Push(u User, msg *Message) (err error) {
 
 func (this *Manage) doMiddle(f Handler, index int) Handler {
 	if index >= len(this.middle) {
-		return func(u User, msg *Message) error {
-			return f(u, msg)
+		return func(msg *Message, u User) error {
+			return f(msg, u)
 		}
 	}
-	return this.doMiddle(func(u User, msg *Message) error {
+	return this.doMiddle(func(msg *Message, u User) error {
 		h := this.middle[index]
 		if h == nil {
-			return f(u, msg)
+			return f(msg, u)
 		}
-		return h.Handler(u, msg, func() error {
-			return f(u, msg)
+		return h.Handler(msg, u, func() error {
+			return f(msg, u)
 		})
 	}, index+1)
 }

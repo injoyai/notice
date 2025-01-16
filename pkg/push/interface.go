@@ -13,11 +13,11 @@ type User interface {
 }
 
 type Middle interface {
-	Handler(u User, msg *Message, next func() error) error
+	Handler(msg *Message, u User, next func() error) error
 }
 
-type Handler func(u User, msg *Message) error
+type Handler func(msg *Message, u User) error
 
-type MiddleFunc func(u User, msg *Message, next func() error) error
+type MiddleFunc func(msg *Message, u User, next func() error) error
 
-func (f MiddleFunc) Handler(u User, msg *Message, next func() error) error { return f(u, msg, next) }
+func (f MiddleFunc) Handler(msg *Message, u User, next func() error) error { return f(msg, u, next) }
