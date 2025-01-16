@@ -12,13 +12,13 @@
 
 | 推送方式         | 是否完成 | 测试通过 | 测试时间      | 备注                                    |
 |--------------|------|------|-----------|---------------------------------------|
-| 桌面端          | ✅    | ✅    | 2025-1-15 | 仓库: https://github.com/go-toast/toast 
+| 桌面端          | ✅    | ✅    | 2025-1-15 | 依赖: https://github.com/injoyai/ios    
 | 钉钉           | ✅    |      |           | 官网: https://www.dingtalk.com          
 | 飞书           |      |      |           | 官网: https://www.feishu.cn             
-| Gotify       | ✅    | ✅    | 2025-1-16 | 仓库: https://github.com/gotify/server  
-| 本机(windows)  | ✅    | ✅    | 2025-1-15 |
+| Gotify       | ✅    | ✅    | 2025-1-16 | 依赖: https://github.com/gotify/server  
+| 本机(windows)  | ✅    | ✅    | 2025-1-15 | 依赖: https://github.com/go-toast/toast 
 | 邮件           | ✅    | ✅    | 2025-1-16 | 依赖: gopkg.in/gomail.v2                
-| 手机厂商         |      |      |           | 仓库: https://github.com/modood/pushapi 
+| 手机厂商         |      |      |           | 依赖: https://github.com/modood/pushapi 
 | Go插件         |      |      |           |
 | PushPlus     | ✅    | ✅    | 2025-1-15 | 官网: https://www.pushplus.plus         
 | Javascript脚本 | ✅    | ✅    | 2025-1-15 |
