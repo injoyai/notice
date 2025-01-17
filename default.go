@@ -1,9 +1,11 @@
 package notice
 
 import (
+	_ "embed"
 	"github.com/injoyai/conv"
 	cfg2 "github.com/injoyai/conv/cfg/v2"
 	"github.com/injoyai/conv/codec"
+	"github.com/injoyai/goutil/oss"
 	"github.com/injoyai/logs"
 	"github.com/injoyai/notice/pkg/api"
 	"github.com/injoyai/notice/pkg/middle"
@@ -26,13 +28,21 @@ import (
 )
 
 const (
+	Version            = "0.0.1"
 	DefaultDesktopPort = 8427
 	DefaultHTTPPort    = 8426
 )
 
+//go:embed config/config_example.yaml
+var exampleConfig []byte
+
 func Default(dataDir string) {
 
-	cfg := cfg2.New(cfg2.WithFile(filepath.Join(dataDir, "/config/config_real.yaml"), codec.Yaml))
+	filename := filepath.Join(dataDir, "/config/config_real.yaml")
+
+	oss.NewNotExist(filename, exampleConfig)
+
+	cfg := cfg2.New(cfg2.WithFile(filename, codec.Yaml))
 
 	//_wechat, _ := wechat.New(dataDir)
 

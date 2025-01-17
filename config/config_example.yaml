@@ -1,0 +1,83 @@
+http:
+    port: 8426
+
+#用户配置d
+user:
+  database:
+    type: sqlite
+    dsn: ./data/database/user.db
+  auth:
+    enable: true
+    type: memory
+    redis:
+      address: 127.0.0.1:6379
+      password: ''
+      db: 0
+    super:
+      #- 123456789
+
+middle:
+  #推送失败重试次数
+  retry: 0
+
+  #违禁词
+  forbidden:
+    words:
+      - 违禁词1
+
+  #消息队列
+  queue:
+    limit: 10
+    cap: 20
+
+  #日志
+  log:
+    enable: true
+
+#桌面端
+desktop:
+  enable: true
+  port: 8427
+
+#脚本
+script:
+   pool: 20
+   content:
+      test: |
+        print("script: ",title,content)
+
+#Webhook
+webhook:
+  webhook1:
+    address: http://127.0.0.1:8080
+    timeout: 10s
+
+
+#Gotify
+gotify:
+    host: http://192.168.192.2:8400
+    token: xxx
+    priority: 9
+    timeout: 10s
+
+#Server酱
+serverChan:
+  sendKey: xxx
+  timeout: 10s
+
+#推送加
+pushPlus:
+  token: xxx
+  timeout: 10s
+
+#钉钉
+dingTalk:
+  url: https://oapi.dingtalk.com/robot/send
+  secret:
+  timeout: 10s
+
+mail:
+  host: smtp.qq.com
+  port: 25
+  username: xxx@qq.com
+  password: xxx
