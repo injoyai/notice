@@ -30,7 +30,7 @@ import (
 )
 
 const (
-	Version            = "0.0.2"
+	Version            = "0.0.3"
 	DefaultDesktopPort = 8427
 	DefaultHTTPPort    = 8426
 )
@@ -178,11 +178,6 @@ func HTTP(port int) error {
 				in.DefaultClient.Forbidden()
 			}
 			r.SetCache("user", u)
-		})
-
-		//通过sse的方式接收消息
-		g.ALL("/receive/sse", func(r *mux.Request) {
-
 		})
 
 		//发送消息
