@@ -51,10 +51,12 @@ func Init(conf *Config) (err error) {
 		return err
 	}
 	if len(data) == 0 {
-		_, err = DB.Insert(&User{Username: DefaultUsername, Password: DefaultPassword, Limit: []string{All}})
+		u := &User{Username: DefaultUsername, Password: DefaultPassword, Limit: []string{All}}
+		_, err = DB.Insert(u)
 		if err != nil {
 			return err
 		}
+		data = []*User{u}
 	}
 	for _, v := range data {
 		Users.Set(v.Username, v)
@@ -63,6 +65,11 @@ func Init(conf *Config) (err error) {
 }
 
 type LoginReq struct {
+	Username string `json:"username"` //用户名
+	Password string `json:"password"` //密码
+}
+
+type LoginBySignalReq struct {
 	ID        string `json:"id"`        //消息id
 	Username  string `json:"username"`  //用户名
 	Signal    string `json:"signal"`    //签名
@@ -134,9 +141,27 @@ func Login(req *LoginReq) (string, error) {
 		return "", err
 	}
 
-	signal := Signal(user.Username, user.Password, time.Unix(req.Timestamp, 0))
+	//通过密码验证
+	if req.Password != user.Password {
+		return "", errors.New("账号或者密码错误")
+	}
 
-	if req.Signal != signal {
+	token := g.RandString(16)
+	err = Auth.Cache.Set(token, user.Username, time.Hour*24*3)
+
+	return token, err
+}
+
+func LoginBySignal(req *LoginBySignalReq) (string, error) {
+
+	//判断用户是否存在
+	user, err := GetByCache(req.Username)
+	if err != nil {
+		return "", err
+	}
+
+	//通过签名验证
+	if signal := Signal(user.Username, user.Password, time.Unix(req.Timestamp, 0)); req.Signal != signal {
 		return "", errors.New("验证失败")
 	}
 
@@ -170,7 +195,7 @@ func Create(user *User) error {
 		}
 		return err
 	}
-	_, err = DB.Where("Username=?", user.Username).Update(user)
+	_, err = DB.Where("Username=?", user.Username).AllCols().Update(user)
 	if err == nil {
 		Users.Set(user.Username, user)
 	}
