@@ -69,7 +69,7 @@ func (this *tcp) Dial(ctx context.Context) (err error) {
 			}
 			go c.Run()
 			t := time.Now()
-			c.WriteAny(user.LoginReq{
+			c.WriteAny(user.LoginBySignalReq{
 				ID:        t.String(),
 				Username:  username,
 				Signal:    user.Signal(username, password, t),

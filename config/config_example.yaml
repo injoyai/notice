@@ -1,5 +1,11 @@
+#api
 http:
     port: 8426
+
+#桌面端
+desktop:
+  enable: true
+  port: 8427
 
 #用户配置d
 user:
@@ -34,10 +40,7 @@ middle:
   log:
     enable: true
 
-#桌面端
-desktop:
-  enable: true
-  port: 8427
+
 
 #脚本
 script:

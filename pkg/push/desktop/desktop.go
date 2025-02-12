@@ -29,12 +29,12 @@ func New(port int, enable ...bool) (*Desktop, error) {
 				return err
 			}
 			c.SetReadTimeout(0)
-			req := new(user.LoginReq)
+			req := new(user.LoginBySignalReq)
 			if err := json.Unmarshal(bs, req); err != nil {
 				return err
 			}
 
-			_, err = user.Login(req)
+			_, err = user.LoginBySignal(req)
 			if er := c.WriteAny(Resp{
 				ID:      req.ID,
 				Success: err == nil,

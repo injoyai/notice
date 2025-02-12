@@ -1,13 +1,15 @@
 package notice
 
 import (
+	"embed"
 	_ "embed"
 	"github.com/injoyai/conv"
 	cfg2 "github.com/injoyai/conv/cfg/v2"
 	"github.com/injoyai/conv/codec"
+	"github.com/injoyai/goutil/frame/in/v3"
+	"github.com/injoyai/goutil/frame/mux"
 	"github.com/injoyai/goutil/oss"
 	"github.com/injoyai/logs"
-	"github.com/injoyai/notice/pkg/api"
 	"github.com/injoyai/notice/pkg/middle"
 	"github.com/injoyai/notice/pkg/push"
 	"github.com/injoyai/notice/pkg/push/desktop"
@@ -28,7 +30,7 @@ import (
 )
 
 const (
-	Version            = "0.0.1"
+	Version            = "0.0.2"
 	DefaultDesktopPort = 8427
 	DefaultHTTPPort    = 8426
 )
@@ -36,9 +38,16 @@ const (
 //go:embed config/config_example.yaml
 var exampleConfig []byte
 
+//go:embed dist
+var web embed.FS
+
 func Default(dataDir string) {
 
-	filename := filepath.Join(dataDir, "/config/config_real.yaml")
+	logs.SetFormatter(logs.TimeFormatter)
+
+	logs.Info("版本:", Version)
+
+	filename := filepath.Join(dataDir, "config/config.yaml")
 
 	oss.NewNotExist(filename, exampleConfig)
 
@@ -142,6 +151,74 @@ func Default(dataDir string) {
 	}))
 
 	//加载http服务
-	err := api.Run(cfg.GetInt("http.port", DefaultHTTPPort))
+	err := HTTP(cfg.GetInt("http.port", DefaultHTTPPort))
 	logs.Err(err)
+}
+
+func HTTP(port int) error {
+
+	s := mux.New().SetPort(port)
+	s.Group("/api", func(g *mux.Grouper) {
+
+		//登录
+		g.POST("/login", func(r *mux.Request) {
+			req := &user.LoginReq{}
+			r.Parse(req)
+			token, err := user.Login(req)
+			in.CheckErr(err)
+			in.Succ(map[string]any{"token": token})
+		})
+
+		//校验权限
+		g.Middle(func(r *mux.Request) {
+			token := r.GetHeader("Authorization")
+			u, valid, err := user.CheckToken(token)
+			in.CheckErr(err)
+			if !valid {
+				in.DefaultClient.Forbidden()
+			}
+			r.SetCache("user", u)
+		})
+
+		//通过sse的方式接收消息
+		g.ALL("/receive/sse", func(r *mux.Request) {
+
+		})
+
+		//发送消息
+		g.ALL("/notice", func(r *mux.Request) {
+			u := r.GetCache("user").Val().(*user.User)
+			msg := &push.Message{}
+			r.Parse(msg)
+			//加入发送队列
+			err := push.Manager.Push(msg, u)
+			in.Err(err)
+		})
+
+		//查询用户列表
+		g.GET("/user/all", func(r *mux.Request) {
+			data, err := user.GetAll()
+			in.CheckErr(err)
+			in.Succ(data)
+		})
+
+		//添加/修改用户
+		g.POST("/user", func(r *mux.Request) {
+			req := new(user.User)
+			r.Parse(req)
+			err := user.Create(req)
+			in.Err(err)
+		})
+
+		//删除用户
+		g.DELETE("/user", func(r *mux.Request) {
+			username := r.GetString("username")
+			err := user.Del(username)
+			in.Err(err)
+		})
+
+	})
+	s.StaticEmbed("/", web, "dist")
+
+	return s.Run()
 }

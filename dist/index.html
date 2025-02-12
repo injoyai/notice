@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理系统</title>
+    <style>
+        body {
+            background-color: #f9f9f9; /* 背景颜色 */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px; /* 圆角 */
+            overflow: hidden; /* 隐藏边框 */
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+            overflow: hidden; /* 隐藏溢出内容 */
+            text-overflow: ellipsis; /* 使用省略号表示溢出内容 */
+            white-space: nowrap; /* 禁止换行 */
+        }
+        th {
+            background-color: #f0f0f0; /* 表头背景颜色改为淡灰色 */
+            color: #343a40; /* 表头文字颜色 */
+        }
+        th:nth-child(1), td:nth-child(1) {
+            width: 10%; /* ID列宽度较小 */
+        }
+        th:nth-child(3), td:nth-child(3) {
+            width: 50%; /* 权限列宽度最大 */
+        }
+        th:nth-child(4), td:nth-child(4) {
+            width: 20%; /* 操作列宽度适中 */
+        }
+        tr:hover {
+            background-color: #f1f1f1; /* 鼠标悬停行的背景颜色 */
+        }
+        .btn {
+            padding: 8px 12px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            color: white; /* 按钮文字颜色 */
+            transition: background-color 0.3s;
+        }
+        .btn-add {
+            background-color: #007BFF; /* 添加按钮颜色 */
+        }
+        .btn-add:hover {
+            background-color: #0056b3; /* 添加按钮悬停颜色 */
+        }
+        .btn-edit {
+            background-color: #007BFF; /* 编辑按钮颜色 */
+        }
+        .btn-edit:hover {
+            background-color: #0056b3; /* 编辑按钮悬停颜色 */
+        }
+        .btn-delete {
+            background-color: #dc3545; /* 删除按钮颜色 */
+        }
+        .btn-delete:hover {
+            background-color: #c82333; /* 删除按钮悬停颜色 */
+        }
+        .btn-cancel {
+            background-color: #6c757d; /* 取消按钮颜色 */
+            color: white; /* 取消按钮文字颜色 */
+        }
+        .btn-cancel:hover {
+            background-color: #5a6268; /* 取消按钮悬停颜色 */
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* 更深的背景颜色 */
+            z-index: 1000;
+            backdrop-filter: blur(5px); /* 背景模糊效果 */
+        }
+        .modal-content {
+            background-color: white;
+            width: 400px;
+            margin: 100px auto;
+            padding: 20px;
+            border-radius: 10px; /* 圆角 */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* 更明显的阴影 */
+            transition: transform 0.3s ease; /* 动画效果 */
+            transform: translateY(-20px); /* 初始位置 */
+        }
+        .modal-content.show {
+            transform: translateY(0); /* 显示时的动画效果 */
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px; /* 增加内边距 */
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* 内阴影 */
+        }
+        .login-container {
+            width: 300px;
+            margin: 100px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px; /* 圆角 */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background-color: white; /* 背景颜色 */
+        }
+        h2 {
+            text-align: center; /* 标题居中 */
+            color: black; /* 标题颜色改为黑色 */
+        }
+        #permissionsCheckboxes {
+            display: flex;
+            flex-wrap: wrap;
+            max-height: 240px; /* 限制高度 */
+            overflow-y: auto; /* 允许垂直滚动 */
+        }
+        #permissionsCheckboxes label {
+            width: 35%; /* 每个标签占45%的宽度 */
+            margin-right: 5%;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center; /* 垂直居中对齐 */
+            justify-content: flex-start; /* 复选框左对齐 */
+            white-space: nowrap; /* 禁止换行 */
+        }
+        #permissionsCheckboxes input[type="checkbox"] {
+            margin-right: 0px; /* 复选框与文本之间的间距 */
+            flex-shrink: 0; 
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录界面 -->
+    <div id="loginPage" class="login-container">
+        <h2>用户登录</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">用户名：</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">密码：</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-add">登录</button>
+        </form>
+    </div>
+
+    <!-- 用户管理界面 -->
+    <div id="managementPage" class="container" style="display: none;">
+        <h2>用户管理</h2>
+        <button class="btn btn-add" onclick="showAddModal()">添加用户</button>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>用户名</th>
+                    <th>权限</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="userTable">
+                <!-- 用户数据将通过JavaScript动态添加 -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 添加/编辑用户的模态框 -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">添加用户</h3>
+            <form id="userForm">
+                <div class="form-group">
+                    <label for="modalUsername">用户名：</label>
+                    <input type="text" id="modalUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="modalPassword">密码：</label>
+                    <input type="text" id="modalPassword" required>
+                </div>
+                <div class="form-group">
+                    <label>权限：</label>
+                    <div id="permissionsCheckboxes">
+                        <label><input type="checkbox" id="selectAllPermissions"> 全选</label>
+                        <label><input type="checkbox" value="wechat:group"> 微信:群聊</label>
+                        <label><input type="checkbox" value="wechat:friend"> 微信:好友</label>
+                        <label><input type="checkbox" value="desktop:notice"> 桌面:通知</label>
+                        <label><input type="checkbox" value="desktop:voice"> 桌面:语音</label>
+                        <label><input type="checkbox" value="desktop:popup"> 桌面:弹窗</label>
+                        <label><input type="checkbox" value="pushplus"> 推送加</label>
+                        <label><input type="checkbox" value="serverchan"> Server酱</label>
+                        <label><input type="checkbox" value="gotify"> Gotify</label>
+                        <label><input type="checkbox" value="dingtalk"> 钉钉</label>
+                        <label><input type="checkbox" value="telegram"> Telegram</label>
+                        <label><input type="checkbox" value="webhook"> Webhook</label>
+                        <label><input type="checkbox" value="plugin"> 插件</label>
+                        <label><input type="checkbox" value="script"> 脚本</label>
+                        <label><input type="checkbox" value="aliyun:sms"> 阿里:短信</label>
+                        <label><input type="checkbox" value="tencent:sms"> 腾讯:短信</label>
+                        <label><input type="checkbox" value="mail"> 邮件</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-add">保存</button>
+                <button type="button" class="btn btn-cancel" onclick="closeModal()">取消</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 删除确认模态框 -->
+    <div id="confirmDeleteModal" class="modal">
+        <div class="modal-content">
+            <h3>确认删除</h3>
+            <p>您确定要删除此用户吗？</p>
+            <button class="btn btn-delete" id="confirmDeleteButton">确认</button>
+            <button class="btn btn-cancel" onclick="closeDeleteConfirm()">取消</button>
+        </div>
+    </div>
+
+    <script>
+        const permissionMap = {
+            "wechat:group": "微信:群聊",
+            "wechat:friend": "微信:好友",
+            "desktop:notice": "桌面:通知",
+            "desktop:voice": "桌面:语音",
+            "desktop:popup": "桌面:弹窗",
+            "pushplus": "推送加",
+            "serverchan": "Server酱",
+            "gotify": "Gotify",
+            "dingtalk": "钉钉",
+            "telegram": "Telegram",
+            "webhook": "Webhook",
+            "plugin": "插件",
+            "script": "脚本",
+            "aliyun:sms": "阿里:短信",
+            "tencent:sms": "腾讯:短信",
+            "mail": "邮件",
+            "all": "所有权限"
+        };
+
+        let users = []; // 确保用户数据在全局范围内可用
+        let authToken = localStorage.getItem('authToken') || ''; // 从localStorage获取token
+
+        // 页面加载时检查token有效性
+        window.onload = async function() {
+            if (authToken) {
+                const isValid = await checkTokenValidity(authToken);
+                if (isValid) {
+                    document.getElementById('loginPage').style.display = 'none';
+                    document.getElementById('managementPage').style.display = 'block';
+                    displayUsers();
+                    return;
+                }
+            }
+            // 如果token无效或不存在，显示登录页面
+            document.getElementById('loginPage').style.display = 'block';
+        };
+
+        // 检查token有效性
+        async function checkTokenValidity(token) {
+            try {
+                const response = await fetch('/api/user/all', {
+                    headers: {
+                        'Authorization': token
+                    }
+                });
+                const result = await response.json();
+                return result.code === 200;
+            } catch (error) {
+                console.error('Token validation failed:', error);
+                return false;
+            }
+        }
+
+        // 登录表单处理
+        document.getElementById('loginForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // 假设登录接口为 /api/login，返回格式为 { code: 200, data: { token: '...' } }
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            const result = await response.json();
+            if (result.code === 200) {
+                authToken = result.data.token; // 从data中获取token
+                localStorage.setItem('authToken', authToken); // 将token存储到localStorage
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('managementPage').style.display = 'block';
+                displayUsers();
+            } else {
+                alert('登录失败，请检查用户名和密码。');
+            }
+        };
+
+        // 显示用户列表
+        async function displayUsers() {
+            const response = await fetch('/api/user/all', {
+                headers: {
+                    'Authorization': authToken
+                }
+            });
+            const result = await response.json();
+            if (result.code === 200) {
+                users = result.data; // 更新全局用户数据
+                const userTable = document.getElementById('userTable');
+                userTable.innerHTML = '';
+                users.forEach(user => {
+                    const permissions = user.limit.includes('all') ? '所有权限' : user.limit.map(p => permissionMap[p] || p).join(', ');
+                    userTable.innerHTML += `
+                        <tr>
+                            <td>${user.id}</td>
+                            <td>${user.username}</td>
+                            <td>${permissions}</td>
+                            <td>
+                                <button class="btn btn-edit" onclick="editUser(${user.id})">编辑</button>
+                                <button class="btn btn-delete" onclick="showDeleteConfirm(${user.id})">删除</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                alert(`错误: ${result.msg}`);
+            }
+        }
+
+        // 显示添加用户模态框
+        function showAddModal() {
+            document.getElementById('modalTitle').textContent = '添加用户';
+            document.getElementById('userModal').style.display = 'block';
+            document.getElementById('userForm').reset();
+            const permissionsCheckboxes = document.getElementById('permissionsCheckboxes');
+            Array.from(permissionsCheckboxes.children).forEach(checkbox => {
+                checkbox.checked = false; // 确保复选框在添加用户时被重置
+            });
+        }
+
+        // 显示编辑用户模态框
+        function editUser(id) {
+            const user = users.find(u => u.id === id);
+            if (user) {
+                document.getElementById('modalTitle').textContent = '编辑用户';
+                document.getElementById('modalUsername').value = user.username;
+                document.getElementById('modalPassword').value = user.password;
+                const checkboxes = document.querySelectorAll('#permissionsCheckboxes input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = user.limit.includes('all') || user.limit.includes(checkbox.value);
+                });
+                document.getElementById('userModal').style.display = 'block';
+            }
+        }
+
+        // 删除用户
+        async function deleteUser(id) {
+            if (confirm('确定要删除这个用户吗？')) {
+                const response = await fetch(`/api/user?id=${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': authToken
+                    }
+                });
+                const result = await response.json();
+                if (result.code === 200) {
+                    displayUsers();
+                } else {
+                    alert(`错误: ${result.msg}`);
+                }
+            }
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('userModal').style.display = 'none';
+        }
+
+        // 用户表单提交处理
+        document.getElementById('userForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('modalUsername').value;
+            const password = document.getElementById('modalPassword').value;
+            const checkboxes = document.querySelectorAll('#permissionsCheckboxes input[type="checkbox"]');
+            const permissions = Array.from(checkboxes).filter(checkbox => checkbox.checked).map(checkbox => checkbox.value);
+
+            // 如果所有权限都被选中，则用'all'替代
+            if (permissions.length === checkboxes.length) {
+                permissions.length = 0; // 清空数组
+                permissions.push('all');
+            }
+
+            const userId = users.find(u => u.username === username)?.id || 0;
+            const url = '/api/user';
+
+            const response = await fetch(url, {
+                method: 'POST', // 使用POST方法进行添加或修改
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': authToken
+                },
+                body: JSON.stringify({ id: userId, username, password, limit: permissions })
+            });
+
+            const result = await response.json();
+            if (result.code === 200) {
+                displayUsers();
+                closeModal();
+            } else {
+                alert(`错误: ${result.msg}`);
+            }
+        };
+
+        // 权限复选框点击选择处理
+        document.getElementById('permissionsCheckboxes').addEventListener('click', function(e) {
+            if (e.target.tagName === 'INPUT') {
+                // 不需要手动切换选中状态，浏览器会自动处理
+            }
+        });
+
+        // 全选复选框处理
+        document.getElementById('selectAllPermissions').addEventListener('change', function(e) {
+            const checkboxes = document.querySelectorAll('#permissionsCheckboxes input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                if (checkbox !== e.target) {
+                    checkbox.checked = e.target.checked;
+                }
+            });
+        });
+
+        // 显示删除确认模态框
+        function showDeleteConfirm(id) {
+            const confirmModal = document.getElementById('confirmDeleteModal');
+            confirmModal.style.display = 'block';
+            document.getElementById('confirmDeleteButton').onclick = function() {
+                deleteUser(id);
+                confirmModal.style.display = 'none'; // 关闭模态框
+            };
+        }
+
+        // 关闭删除确认模态框
+        function closeDeleteConfirm() {
+            document.getElementById('confirmDeleteModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
