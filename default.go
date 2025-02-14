@@ -65,7 +65,12 @@ func Default(dataDir string) {
 	)
 
 	//telegram
-	_telegram, _ := telegram.New(cfg.GetString("telegram.token"))
+	_telegram, err := telegram.New(
+		cfg.GetString("telegram.token"),
+		cfg.GetString("telegram.proxy"),
+		cfg.GetString("telegram.defaultChatID"),
+	)
+	logs.PrintErr(err)
 
 	//注册pusher
 	push.Manager.Register(
@@ -151,7 +156,7 @@ func Default(dataDir string) {
 	}))
 
 	//加载http服务
-	err := HTTP(cfg.GetInt("http.port", DefaultHTTPPort))
+	err = HTTP(cfg.GetInt("http.port", DefaultHTTPPort))
 	logs.Err(err)
 }
 

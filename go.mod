@@ -4,6 +4,8 @@ go 1.20
 
 require (
 	github.com/eatmoreapple/openwechat v1.4.8
+	github.com/fatih/color v1.14.1
+	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
 	github.com/injoyai/base v1.0.19
 	github.com/injoyai/conv v1.1.10
@@ -14,7 +16,6 @@ require (
 	github.com/redis/go-redis/v9 v9.5.1
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
-	gopkg.in/telebot.v4 v4.0.0-beta.4
 )
 
 require (
@@ -28,7 +29,7 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.5.0 // indirect
-	github.com/fatih/color v1.14.1 // indirect
+	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/getlantern/context v0.0.0-20190109183933-c447772a6520 // indirect
 	github.com/getlantern/errors v0.0.0-20190325191628-abdb3e3e36f7 // indirect
 	github.com/getlantern/golog v0.0.0-20190830074920-4ef2e798c2d7 // indirect
@@ -55,6 +56,7 @@ require (
 	github.com/injoyai/io v0.1.8 // indirect
 	github.com/jmespath/go-jmespath v0.3.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/kr/pretty v0.3.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
