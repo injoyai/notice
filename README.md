@@ -24,7 +24,7 @@
 | Javascript脚本 | ✅    | ✅    | 2025-1-15 |
 | Server酱      | ✅    | ✅    | 2025-1-15 | 官网: https://sct.ftqq.com                                     
 | 短信           | ✅    | ✅    | 2025-1-15 |
-| Telegram     | ✅    |      | 2025-2-14 | 依赖: https://github.com/go-telegram-bot-api/telegram-bot-api/ 
+| Telegram     | ✅    | ✅    | 2025-2-14 | 依赖: https://github.com/go-telegram-bot-api/telegram-bot-api/ 
 | 语音           | ✅    |      |           |
 | Webhook      | ✅    | ✅    | 2025-1-16 | 简易版本,后续改成通过脚本定义body                                          |
 | 微信           | ✅    | ✅    | 2025-1-15 | 非官方,可能会被限制,一个手机号能创建2个账号                                      |
