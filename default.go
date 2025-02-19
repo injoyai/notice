@@ -16,6 +16,7 @@ import (
 	"github.com/injoyai/notice/pkg/push/dingtalk"
 	"github.com/injoyai/notice/pkg/push/gotify"
 	"github.com/injoyai/notice/pkg/push/local"
+	"github.com/injoyai/notice/pkg/push/mail"
 	"github.com/injoyai/notice/pkg/push/plugin"
 	"github.com/injoyai/notice/pkg/push/pushplus"
 	"github.com/injoyai/notice/pkg/push/script"
@@ -79,6 +80,14 @@ func Default(dataDir string) {
 		_telegram,    //telegram
 		plugin.New(), //插件
 		local.New(),  //本机
+
+		//邮箱
+		mail.New(&mail.Config{
+			Host:     cfg.GetString("mail.host"),
+			Port:     cfg.GetInt("mail.port", 25),
+			Username: cfg.GetString("mail.username"),
+			Password: cfg.GetString("mail.password"),
+		}),
 
 		//webhook
 		webhook.New(func() map[string]*webhook.Config {
