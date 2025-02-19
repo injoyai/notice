@@ -1,6 +1,6 @@
 
 name="notice"
-version="0.2"
+version="latest"
 
 GOOS=linux GOARCH=amd64 go build -v -ldflags="-w -s" -o ./$name
 echo "amd64编译完成..."
