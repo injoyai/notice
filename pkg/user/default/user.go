@@ -106,7 +106,7 @@ func (this *User) Limits(method string) bool {
 
 func CheckToken(token string) (u *User, valid bool, err error) {
 	if Auth.IsSuper(token) {
-		return &User{Username: DefaultUsername, Limit: []string{All}}, true, nil
+		return &User{Name: "超级用户", Username: DefaultUsername, Limit: []string{All}}, true, nil
 	}
 	username, err := Auth.Cache.Get(token)
 	if err != nil {
