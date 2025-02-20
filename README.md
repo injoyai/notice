@@ -1,12 +1,23 @@
 ### 消息通知服务
 
-#### 开发中...
-
 - 把github上的推送项目聚合起来,前期先用自己的依赖库,后期完善成原生或者热门依赖库
 - 用户管理(可选),涉及权限等
 - 重试等操作可以通过中间件实现
 - 各种各样的消息推送
 - 微信好友,微信群聊,桌面通知,桌面语音,桌面弹窗,阿里云短信,钉钉,企业微信,Server酱,Gotify...
+
+### 如何使用
+
+- Docker
+  ```shell
+  docker run -d \
+    -p 8426-8427:8426-8427 \
+    -v path/data:/root/notice/data \
+    -v path/config:/root/notice/config \
+    --name notice \
+    injoyai/notice-arm64:latest
+  ```
+- 自行编译
 
 ### 支持方式
 
