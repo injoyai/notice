@@ -45,9 +45,17 @@
 
 1. 通过HTTP进行消息推送
 
-- ![](docs/push_by_http.png)
-- ![](docs/push_by_http_result.png)
+   - ![](docs/push_by_http.png)
 
 2. 通过GUI(本质是TCP)推送,需要通过HTTP先添加用户先
 
-- ![](docs/push_by_gui.png)
+   - ![](docs/push_by_gui.png)
+
+3. 推送结果
+
+  - ![](docs/mail_message.png)
+  - ![](docs/telegram_message.png)
+  - ![](docs/wechat_message.png)
+  - ![](docs/windows_message.png)
+  - ![](docs/pushplus_message.png)
+  - ![](docs/serverchan_message.png)
