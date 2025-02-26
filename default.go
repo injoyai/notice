@@ -31,7 +31,7 @@ import (
 )
 
 const (
-	Version            = "0.0.3"
+	Version            = "0.0.4"
 	DefaultDesktopPort = 8427
 	DefaultHTTPPort    = 8426
 )
@@ -186,6 +186,9 @@ func HTTP(port int) error {
 		//校验权限
 		g.Middle(func(r *mux.Request) {
 			token := r.GetHeader("Authorization")
+			if len(token) == 0 {
+				token = r.GetString("token")
+			}
 			u, valid, err := user.CheckToken(token)
 			in.CheckErr(err)
 			if !valid {
