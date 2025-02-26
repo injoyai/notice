@@ -187,7 +187,7 @@ func HTTP(port int) error {
 		g.Middle(func(r *mux.Request) {
 			token := r.GetHeader("Authorization")
 			if len(token) == 0 {
-				token = r.GetString("token")
+				token = r.GetQueryVar("token").String()
 			}
 			u, valid, err := user.CheckToken(token)
 			in.CheckErr(err)
