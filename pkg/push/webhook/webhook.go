@@ -1,7 +1,6 @@
 package webhook
 
 import (
-	"errors"
 	"github.com/injoyai/goutil/net/http"
 	"github.com/injoyai/goutil/script/js"
 	"github.com/injoyai/notice/pkg/push"
@@ -16,8 +15,9 @@ func New(m map[string]*Config) *Webhook {
 }
 
 type Webhook struct {
-	m  map[string]*Config
-	js *js.Client
+	m      map[string]*Config
+	js     *js.Client
+	Client *http.Client //
 }
 
 func (this *Webhook) Name() string {
@@ -31,7 +31,11 @@ func (this *Webhook) Types() []string {
 func (this *Webhook) Push(msg *push.Message) error {
 	w, ok := this.m[msg.Target]
 	if !ok {
-		return errors.New("webhook不存在: " + msg.Target)
+		if this.Client == nil {
+			this.Client = http.NewClient()
+		}
+		err := this.Client.Url(msg.Target).SetBody(msg.Content).Post().Err()
+		return err
 	}
 	s := strings.ReplaceAll(w.Body, "${title}", msg.Title)
 	s = strings.ReplaceAll(s, "${content}", msg.Content)
