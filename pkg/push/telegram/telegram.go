@@ -62,7 +62,7 @@ func (this *Telegram) Name() string { return "Telegram" }
 func (this *Telegram) Types() []string { return []string{push.TypeTelegram} }
 
 func (this *Telegram) Push(msg *push.Message) error {
-	if this.Bot == nil {
+	if this == nil || this.Bot == nil {
 		return errors.New("telegram未初始化")
 	}
 	if msg.Target == "" {
