@@ -17,7 +17,7 @@ func NewClient(timeout ...time.Duration) *http.Client {
 					InsecureSkipVerify: true,
 				},
 			},
-			Timeout: conv.DefaultDuration(0, timeout...),
+			Timeout: conv.Default[time.Duration](0, timeout...),
 		},
 	}
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/injoyai/base/maps/wait/v2"
+	"github.com/injoyai/base/maps/wait"
 	"github.com/injoyai/base/safe"
 	"github.com/injoyai/goutil/cache"
 	"github.com/injoyai/goutil/notice"

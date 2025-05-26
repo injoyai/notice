@@ -4,7 +4,7 @@ import (
 	"embed"
 	_ "embed"
 	"github.com/injoyai/conv"
-	cfg2 "github.com/injoyai/conv/cfg/v2"
+	cfg2 "github.com/injoyai/conv/cfg"
 	"github.com/injoyai/conv/codec"
 	"github.com/injoyai/goutil/frame/in/v3"
 	"github.com/injoyai/goutil/frame/mux"

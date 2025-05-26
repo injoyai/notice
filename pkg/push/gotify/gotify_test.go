@@ -1,7 +1,7 @@
 package gotify
 
 import (
-	"github.com/injoyai/conv/cfg/v2"
+	"github.com/injoyai/conv/cfg"
 	"github.com/injoyai/notice/pkg/push"
 	"testing"
 )

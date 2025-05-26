@@ -2,12 +2,12 @@ package user
 
 import (
 	"errors"
-	"github.com/injoyai/base/g"
 	"github.com/injoyai/base/maps"
 	"github.com/injoyai/conv"
 	"github.com/injoyai/goutil/database/mysql"
 	"github.com/injoyai/goutil/database/sqlite"
 	"github.com/injoyai/goutil/database/xorms"
+	"github.com/injoyai/goutil/g"
 	"time"
 )
 

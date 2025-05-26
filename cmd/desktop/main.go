@@ -3,9 +3,9 @@ package main
 import (
 	_ "embed"
 	"fmt"
-	"github.com/injoyai/base/g"
 	"github.com/injoyai/conv"
 	"github.com/injoyai/goutil/cache"
+	"github.com/injoyai/goutil/g"
 	"github.com/injoyai/goutil/oss"
 	"github.com/injoyai/goutil/oss/tray"
 	"github.com/injoyai/lorca"

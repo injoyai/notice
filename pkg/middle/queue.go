@@ -3,7 +3,7 @@ package middle
 import (
 	"errors"
 	"fmt"
-	"github.com/injoyai/base/maps/wait/v2"
+	"github.com/injoyai/base/maps/wait"
 	"github.com/injoyai/notice/pkg/push"
 	"time"
 )

@@ -3,8 +3,8 @@ package wechat
 import (
 	"bufio"
 	"github.com/eatmoreapple/openwechat"
-	"github.com/injoyai/base/g"
 	"github.com/injoyai/conv"
+	"github.com/injoyai/goutil/g"
 	"github.com/injoyai/goutil/net/http"
 	"github.com/injoyai/logs"
 	"io"
