@@ -3,6 +3,7 @@ package serverchan
 import (
 	"errors"
 	"fmt"
+	"github.com/injoyai/conv"
 	"github.com/injoyai/goutil/net/http"
 	"github.com/injoyai/notice/pkg/push"
 	"net/url"
@@ -10,11 +11,14 @@ import (
 	"strings"
 )
 
+func Push(sendKey string, title, content string) error {
+	return New(sendKey).Push(&push.Message{Title: title, Content: content})
+}
+
 func New(sendKey string, client ...*http.Client) *ServerChan {
 	s := &ServerChan{
-		SendKey: sendKey,
-		Api:     getApi(sendKey),
-		client:  http.DefaultClient,
+		DefaultSendKey: sendKey,
+		client:         http.DefaultClient,
 	}
 	if len(client) > 0 && client[0] != nil {
 		s.client = client[0]
@@ -23,9 +27,8 @@ func New(sendKey string, client ...*http.Client) *ServerChan {
 }
 
 type ServerChan struct {
-	SendKey string
-	Api     string
-	client  *http.Client
+	DefaultSendKey string
+	client         *http.Client
 }
 
 func (this *ServerChan) Name() string {
@@ -37,17 +40,15 @@ func (this *ServerChan) Types() []string {
 }
 
 func (this *ServerChan) Push(msg *push.Message) error {
-	if this.SendKey == "" {
-		return errors.New("无效的Server酱推送SendKey")
-	}
-	if this.Api == "" {
+	sendKey := conv.Select[string](msg.Target != "", msg.Target, this.DefaultSendKey)
+	if sendKey == "" {
 		return errors.New("无效的Server酱推送SendKey")
 	}
 	data := url.Values{}
 	data.Set("text", msg.Title)
 	data.Set("desp", msg.Content)
 
-	resp := this.client.Url(this.Api).
+	resp := this.client.Url(this.getApi(sendKey)).
 		SetHeader("Content-Type", "application/x-www-form-urlencoded").
 		SetBody(data.Encode()).Post()
 	if resp.Err() != nil {
@@ -62,7 +63,7 @@ func (this *ServerChan) Push(msg *push.Message) error {
 	return nil
 }
 
-func getApi(sendKey string) string {
+func (*ServerChan) getApi(sendKey string) string {
 	// 根据 sendkey 是否以 "sctp" 开头决定 API 的 URL
 	var apiUrl string
 	if strings.HasPrefix(sendKey, "sctp") {

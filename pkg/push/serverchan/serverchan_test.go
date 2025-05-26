@@ -1,13 +1,13 @@
 package serverchan
 
 import (
-	"github.com/injoyai/conv/cfg/v2"
+	"github.com/injoyai/conv/cfg"
 	"github.com/injoyai/notice/pkg/push"
 	"testing"
 )
 
 func TestNew(t *testing.T) {
-	cfg.Init(cfg.WithFile("../../../config/config_real.yaml"))
+	cfg.Init(cfg.WithFile("../../../config/config.yaml"))
 	sendKey := cfg.GetString("serverChan.sendKey")
 	t.Log(sendKey)
 	x := New(sendKey)
