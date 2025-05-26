@@ -10,12 +10,12 @@ import (
 	"time"
 )
 
-func Push(token, proxy, chatID, msg string) error {
+func Push(token, proxy, chatID, content string) error {
 	t, err := _new(token, proxy, chatID)
 	if err != nil {
 		return err
 	}
-	return t.Push(&push.Message{Content: msg})
+	return t.Push(push.NewContent(content))
 }
 
 func New(token, proxy, chatID string) (*Telegram, error) {
@@ -85,11 +85,4 @@ func (this *Telegram) Push(msg *push.Message) error {
 	target := conv.Select(msg.Target != "", msg.Target, this.DefaultChatID)
 	_, err := this.Bot.Send(api.NewMessage(conv.Int64(target), msg.Content))
 	return err
-}
-
-func Message(content string, chatID ...string) *push.Message {
-	return &push.Message{
-		Target:  conv.Default("", chatID...),
-		Content: content,
-	}
 }
