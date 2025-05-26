@@ -16,14 +16,10 @@ func Push(sendKey string, title, content string) error {
 }
 
 func New(sendKey string, client ...*http.Client) *ServerChan {
-	s := &ServerChan{
+	return &ServerChan{
 		DefaultSendKey: sendKey,
-		client:         http.DefaultClient,
+		client:         conv.Default[*http.Client](http.DefaultClient, client...),
 	}
-	if len(client) > 0 && client[0] != nil {
-		s.client = client[0]
-	}
-	return s
 }
 
 type ServerChan struct {
