@@ -2,6 +2,7 @@ package pushplus
 
 import (
 	"errors"
+	"github.com/injoyai/conv"
 	"github.com/injoyai/goutil/g"
 	"github.com/injoyai/goutil/net/http"
 	"github.com/injoyai/notice/pkg/push"
@@ -9,20 +10,20 @@ import (
 
 const url = "http://www.pushplus.plus/send"
 
+func Push(token string, title, content string) error {
+	return New(token).Push(push.NewMessage(title, content))
+}
+
 func New(token string, client ...*http.Client) *PushPlus {
-	p := &PushPlus{
-		Token:  token,
-		client: http.DefaultClient,
+	return &PushPlus{
+		DefaultToken: token,
+		client:       conv.Default(http.DefaultClient, client...),
 	}
-	if len(client) > 0 && client[0] != nil {
-		p.client = client[0]
-	}
-	return p
 }
 
 type PushPlus struct {
-	Token  string
-	client *http.Client
+	DefaultToken string
+	client       *http.Client
 }
 
 func (this *PushPlus) Name() string {
@@ -34,11 +35,12 @@ func (this *PushPlus) Types() []string {
 }
 
 func (this *PushPlus) Push(msg *push.Message) error {
-	if this.Token == "" {
+	token := conv.Select(msg.Target != "", msg.Target, this.DefaultToken)
+	if token == "" {
 		return errors.New("无效的PushPlus推送Token")
 	}
 	return this.client.Url(url).SetBody(g.Map{
-		"token":   this.Token,
+		"token":   token,
 		"title":   msg.Title,
 		"content": msg.Content,
 	}).Post().Err()

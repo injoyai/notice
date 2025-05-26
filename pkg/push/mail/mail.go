@@ -8,6 +8,10 @@ import (
 	"strings"
 )
 
+func Push(cfg *Config, title, content string) error {
+	return New(cfg).Push(push.NewMessage(title, content))
+}
+
 func New(cfg *Config) *Mail {
 	if len(cfg.Host) == 0 {
 		cfg.Host = "smtp.qq.com"
@@ -23,11 +27,13 @@ func New(cfg *Config) *Mail {
 	)
 	dial.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	return &Mail{
-		Dialer: dial,
+		DefaultTarget: cfg.DefaultTarget,
+		Dialer:        dial,
 	}
 }
 
 type Mail struct {
+	DefaultTarget []string
 	*gomail.Dialer
 }
 
@@ -44,8 +50,11 @@ func (this *Mail) Push(msg *push.Message) error {
 	m.SetHeader("From", this.Username) // 发件人
 	//m.SetHeader("From", "alias"+"<"+userName+">") // 增加发件人别名
 
-	m.SetHeader("To", strings.Split(msg.Target, ",")...) // 收件人，可以多个收件人，但必须使用相同的 SMTP 连接
-	m.SetHeader("Subject", msg.Title)                    // 邮件主题
+	target := strings.Split(msg.Target, ",")
+	target = conv.Select(len(target) > 0, target, this.DefaultTarget)
+
+	m.SetHeader("To", target...)      // 收件人，可以多个收件人，但必须使用相同的 SMTP 连接
+	m.SetHeader("Subject", msg.Title) // 邮件主题
 	m.SetBody("text/html", msg.Content)
 
 	// 抄送，可以多个
@@ -79,4 +88,7 @@ type Config struct {
 	Username string `json:"username"`
 	// 如果是网易邮箱 pass填密码，qq邮箱填授权码
 	Password string `json:"password"`
+
+	// DefaultTarget 默认推送对象
+	DefaultTarget []string `json:"defaultTarget"`
 }
