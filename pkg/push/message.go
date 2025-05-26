@@ -1,5 +1,22 @@
 package push
 
+import "github.com/injoyai/conv"
+
+func NewMessage(title, content string, target ...string) *Message {
+	return &Message{
+		Target:  conv.Default("", target...),
+		Title:   title,
+		Content: content,
+	}
+}
+
+func NewContent(content string, target ...string) *Message {
+	return &Message{
+		Target:  conv.Default("", target...),
+		Content: content,
+	}
+}
+
 // Message 消息格式
 type Message struct {
 	ID      string         `json:"id"`               //消息id
