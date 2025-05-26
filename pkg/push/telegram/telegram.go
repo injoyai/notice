@@ -10,16 +10,16 @@ import (
 	"time"
 )
 
-func Push(token, proxy, chatid, msg string) error {
-	t, err := _new(token, proxy, chatid)
+func Push(token, proxy, chatID, msg string) error {
+	t, err := _new(token, proxy, chatID)
 	if err != nil {
 		return err
 	}
 	return t.Push(&push.Message{Content: msg})
 }
 
-func New(token, proxy, chatid string) (*Telegram, error) {
-	t, err := _new(token, proxy, chatid)
+func New(token, proxy, chatID string) (*Telegram, error) {
+	t, err := _new(token, proxy, chatID)
 	if err == nil {
 		go t.listen()
 	}
@@ -56,7 +56,7 @@ func (this *Telegram) listen() {
 		if update.Message != nil { // 检查是否有新消息
 
 			switch update.Message.Text {
-			case "/chat_id", "/chatid":
+			case "/chat_id", "/chatid", "chatID":
 				// 获取用户的 chat_id
 				msg := api.NewMessage(update.Message.Chat.ID, "Hello! Your chat_id is: "+conv.String(update.Message.Chat.ID))
 				msg.ReplyToMessageID = update.Message.MessageID
@@ -85,4 +85,11 @@ func (this *Telegram) Push(msg *push.Message) error {
 	target := conv.Select(msg.Target != "", msg.Target, this.DefaultChatID)
 	_, err := this.Bot.Send(api.NewMessage(conv.Int64(target), msg.Content))
 	return err
+}
+
+func Message(content string, chatID ...string) *push.Message {
+	return &push.Message{
+		Target:  conv.Default("", chatID...),
+		Content: content,
+	}
 }

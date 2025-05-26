@@ -10,9 +10,9 @@ func TestNew(t *testing.T) {
 	cfg.Init(cfg.WithFile("../../../config/config.yaml"))
 	token := cfg.GetString("telegram.token")
 	proxy := cfg.GetString("telegram.proxy")
-	chatid := cfg.GetString("telegram.chatid")
+	chatID := cfg.GetString("telegram.chatID")
 
-	te, err := New(token, proxy, chatid)
+	te, err := New(token, proxy, chatID)
 	if err != nil {
 		t.Error(err)
 		return

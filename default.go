@@ -69,7 +69,7 @@ func Default(dataDir string) {
 	_telegram, err := telegram.New(
 		cfg.GetString("telegram.token"),
 		cfg.GetString("telegram.proxy"),
-		cfg.GetString("telegram.chatid"),
+		cfg.GetString("telegram.chatID"),
 	)
 	logs.PrintErr(err)
 

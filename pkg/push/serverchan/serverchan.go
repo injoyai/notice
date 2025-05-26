@@ -77,3 +77,11 @@ func (*ServerChan) getApi(sendKey string) string {
 	}
 	return apiUrl
 }
+
+func Message(title, content string, target ...string) *push.Message {
+	return &push.Message{
+		Target:  conv.Default("", target...),
+		Title:   title,
+		Content: content,
+	}
+}
