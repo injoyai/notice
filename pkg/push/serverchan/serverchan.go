@@ -12,7 +12,7 @@ import (
 )
 
 func Push(sendKey string, title, content string) error {
-	return New(sendKey).Push(&push.Message{Title: title, Content: content})
+	return New(sendKey).Push(push.NewMessage(title, content))
 }
 
 func New(sendKey string, client ...*http.Client) *ServerChan {
@@ -76,12 +76,4 @@ func (*ServerChan) getApi(sendKey string) string {
 		apiUrl = fmt.Sprintf("https://sctapi.ftqq.com/%s.send", sendKey)
 	}
 	return apiUrl
-}
-
-func Message(title, content string, target ...string) *push.Message {
-	return &push.Message{
-		Target:  conv.Default("", target...),
-		Title:   title,
-		Content: content,
-	}
 }
