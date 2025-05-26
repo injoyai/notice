@@ -9,7 +9,7 @@ import (
 
 func main() {
 
-	cfg.Init(cfg.WithFile("./config/config_real.yaml"))
+	cfg.Init(cfg.WithFile("./config/config.yaml"))
 
 	w := mail.New(&mail.Config{
 		Host:     cfg.GetString("mail.host"),

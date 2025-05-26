@@ -18,7 +18,7 @@ func Push(sendKey string, title, content string) error {
 func New(sendKey string, client ...*http.Client) *ServerChan {
 	return &ServerChan{
 		DefaultSendKey: sendKey,
-		client:         conv.Default[*http.Client](http.DefaultClient, client...),
+		client:         conv.Default(http.DefaultClient, client...),
 	}
 }
 
